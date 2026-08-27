@@ -11,6 +11,8 @@ export HOMEBREW_NO_AUTO_UPDATE=1
 export HOMEBREW_NO_ENV_HINTS=1
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
+# Xcode 26 CI: evita linker errors swiftCompatibility5x (MetalToolchain).
+export TOOLCHAINS=com.apple.dt.toolchain.XcodeDefault
 
 echo "===== Homebrew / Node / CocoaPods ====="
 brew install node@20 cocoapods
