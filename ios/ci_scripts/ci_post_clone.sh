@@ -29,7 +29,39 @@ node -v
 npm -v
 pod --version
 
+# xcodebuild NO hereda el PATH de este script. Hay que fijar NODE_BINARY
+# en .xcode.env.local y dejar un symlink donde los scripts de RN lo busquen.
+NODE_BIN="$(command -v node)"
+echo "export NODE_BINARY=${NODE_BIN}" > "${CI_PRIMARY_REPOSITORY_PATH}/ios/.xcode.env.local"
+mkdir -p /usr/local/bin 2>/dev/null || true
+ln -sf "${NODE_BIN}" /usr/local/bin/node 2>/dev/null || true
+# Persistencia para shells que lean estos perfiles
+{
+  echo "export PATH=\"${BREW_PREFIX}/opt/node@20/bin:${BREW_PREFIX}/bin:\$PATH\""
+  echo "export NODE_BINARY=\"${NODE_BIN}\""
+} >> "${HOME}/.zprofile"
+{
+  echo "export PATH=\"${BREW_PREFIX}/opt/node@20/bin:${BREW_PREFIX}/bin:\$PATH\""
+  echo "export NODE_BINARY=\"${NODE_BIN}\""
+} >> "${HOME}/.bash_profile"
+echo "NODE_BINARY=${NODE_BIN}"
+
 cd "$CI_PRIMARY_REPOSITORY_PATH"
+
+echo "===== env files (no van en git) ====="
+# Los schemes leen .env / .env.development; en Cloud no existen.
+# Preferí la variable de entorno de Xcode Cloud si está definida.
+if [ ! -f .env ]; then
+  if [ -n "${REACT_APP_BASE_URL:-}" ]; then
+    printf 'REACT_APP_BASE_URL=%s\n' "${REACT_APP_BASE_URL}" > .env
+  elif [ -f .env.example ]; then
+    cp .env.example .env
+  else
+    printf 'REACT_APP_BASE_URL=http://localhost:8080\n' > .env
+  fi
+fi
+[ -f .env.development ] || cp .env .env.development
+[ -f .env.production ] || cp .env .env.production
 
 echo "===== npm install ====="
 npm install --legacy-peer-deps
