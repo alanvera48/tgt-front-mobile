@@ -7,6 +7,8 @@ set -e
 set -x
 
 export HOMEBREW_NO_INSTALL_CLEANUP=TRUE
+export HOMEBREW_NO_AUTO_UPDATE=1
+export HOMEBREW_NO_ENV_HINTS=1
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
@@ -31,6 +33,81 @@ cd "$CI_PRIMARY_REPOSITORY_PATH"
 
 echo "===== npm install ====="
 npm install --legacy-peer-deps
+
+echo "===== fix boost download (checksum flaky en CDN) ====="
+# CocoaPods a veces descarga basura/HTML desde archives.boost.io y falla el sha256.
+# Bajamos el tarball nosotros, verificamos el hash y apuntamos el podspec a file://.
+BOOST_EXPECTED_SHA="f0397ba6e982c4450f27bf32a2a83292aba035b827a5623a14636ea583318c41"
+BOOST_CACHE_DIR="${CI_PRIMARY_REPOSITORY_PATH}/ios/.boost-cache"
+BOOST_TGZ="${BOOST_CACHE_DIR}/boost_1_76_0.tar.bz2"
+BOOST_PODSPEC="${CI_PRIMARY_REPOSITORY_PATH}/node_modules/react-native/third-party-podspecs/boost.podspec"
+
+mkdir -p "$BOOST_CACHE_DIR"
+
+download_boost() {
+  url="$1"
+  attempt="$2"
+  echo "boost download attempt ${attempt}: ${url}"
+  rm -f "$BOOST_TGZ"
+  if ! curl -L --fail --retry 3 --retry-delay 2 --connect-timeout 30 \
+    --max-time 300 -o "$BOOST_TGZ" "$url"; then
+    return 1
+  fi
+  got="$(shasum -a 256 "$BOOST_TGZ" | awk '{print $1}')"
+  echo "boost sha256=${got}"
+  if [ "$got" = "$BOOST_EXPECTED_SHA" ]; then
+    return 0
+  fi
+  echo "boost checksum mismatch (expected ${BOOST_EXPECTED_SHA})"
+  rm -f "$BOOST_TGZ"
+  return 1
+}
+
+BOOST_OK=0
+i=1
+for url in \
+  "https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2" \
+  "https://sourceforge.net/projects/boost/files/boost/1.76.0/boost_1_76_0.tar.bz2/download"
+do
+  if download_boost "$url" "$i"; then
+    BOOST_OK=1
+    break
+  fi
+  i=$((i + 1))
+done
+
+if [ "$BOOST_OK" != "1" ]; then
+  echo "ERROR: could not download boost 1.76.0 with the expected checksum"
+  exit 1
+fi
+
+# Apuntar el podspec al archivo local verificado (evita re-download corrupto).
+export BOOST_PODSPEC
+export BOOST_TGZ
+python3 <<'PY'
+import os
+from pathlib import Path
+
+podspec = Path(os.environ["BOOST_PODSPEC"])
+boost_uri = Path(os.environ["BOOST_TGZ"]).resolve().as_uri()
+text = podspec.read_text()
+replacements = [
+    "https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2",
+    "https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.bz2",
+]
+patched = False
+for old in replacements:
+    if old in text:
+        text = text.replace(old, boost_uri)
+        patched = True
+if not patched and "file://" not in text:
+    raise SystemExit(f"boost.podspec URL not found to patch: {podspec}")
+podspec.write_text(text)
+print(f"patched boost.podspec -> {boost_uri}")
+PY
+
+# Limpiar cache externo de boost por si quedó basura de un intento previo.
+rm -rf "${HOME}/Library/Caches/CocoaPods/Pods/External/boost" || true
 
 echo "===== pod install ====="
 cd ios
