@@ -53,12 +53,24 @@ target 'thegoodtrainer' do
     )
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
 
-    # Xcode recientes compilan con un estándar C++ más nuevo por default, lo que
-    # convierte en error el literal operator con espacio (deprecado desde C++17)
-    # que usan fmt/RCT-Folly/glog. Forzamos c++17 en todos los targets de Pods.
+    # Xcode 16+/26 trata como error el literal operator con espacio
+    # (`operator "" _pt`) de Yoga/Folly/fmt. c++17 solo no alcanza: hay que
+    # silenciar ese warning-as-error en todos los pods C++.
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |build_configuration|
         build_configuration.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+        build_configuration.build_settings['GCC_TREAT_WARNINGS_AS_ERRORS'] = 'NO'
+
+        flags = build_configuration.build_settings['OTHER_CPLUSPLUSFLAGS']
+        flags = ['$(inherited)'] if flags.nil?
+        flags = flags.split(' ') if flags.is_a?(String)
+        %w[
+          -Wno-deprecated-literal-operator
+          -Wno-error=deprecated-literal-operator
+        ].each do |flag|
+          flags << flag unless flags.include?(flag)
+        end
+        build_configuration.build_settings['OTHER_CPLUSPLUSFLAGS'] = flags
 
         # El Xcode instalado ya no soporta un deployment target menor a 12.0;
         # algunos pods viejos (ej. RNVectorIcons) todavía piden 11.0.
