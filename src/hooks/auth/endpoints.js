@@ -39,7 +39,7 @@ export const logIn = async user => {
 };
 
 export const logInWithGoogle = async ({credential, role}) => {
-  const response = await axiosInstance.post('/v1/auth/google', {
+  const response = await axiosInstance.post('/api/auth/google', {
     credential,
     role,
   });
@@ -53,7 +53,7 @@ export const logInWithGoogle = async ({credential, role}) => {
 };
 
 export const logInWithApple = async ({credential, role}) => {
-  const response = await axiosInstance.post('/v1/auth/apple', {
+  const response = await axiosInstance.post('/api/auth/apple', {
     credential,
     role,
   });
