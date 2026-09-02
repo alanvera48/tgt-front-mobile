@@ -1,15 +1,15 @@
 import React from 'react';
-import {Dimensions, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {Accordion, AccordionItem, AccordionTrigger} from '@gluestack-ui/themed';
 import {AccordionHeader} from '@gluestack-ui/themed';
 import {AccordionContent} from '@gluestack-ui/themed';
+import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faMinus, faPlus} from '@fortawesome/free-solid-svg-icons';
 
 import TextBase from '../Base/TextBase';
 import DropDownIcon from './components/DropDownIcon';
 import {colorByDiets} from '../../utils/colorDiets';
-import {FOOD_DATABASE} from '../../constants/diets';
-import {DEVICE_WIDTH} from '../../constants';
+import {findFoodMatch, getMealIcon, getMealTotals} from '../../utils/diets';
 import {COLORS} from '../../style/style';
 
 export const MealTime = {
@@ -31,148 +31,116 @@ export default function Collapsible({meals}) {
       size="md"
       backgroundColor={COLORS.dark.background}
       variant="filled"
-      type="multiple"
+      type="single"
       isCollapsible={true}
       isDisabled={false}>
       {meals?.length > 0 &&
         meals?.map((meal, index) => {
-          let totalCalories = 0;
-          let totalProteins = 0;
-          let currentCalorie = 0;
-          let currentProtein = 0;
-          meal.items.map((item, index) => {
-            let currentMeal = FOOD_DATABASE.filter(
-              food => food.name === item.food,
-            )[0];
-            currentCalorie = currentMeal.calories;
-            currentProtein = currentMeal.protein;
+          const accentColor = colorByDiets(meal.name);
+          const {calories: totalCalories, protein: totalProteins} =
+            getMealTotals(meal);
+          const hasNutritionData = totalCalories > 0 || totalProteins > 0;
+          const foodCount = meal.items?.length ?? 0;
 
-            totalCalories = totalCalories + currentCalorie;
-            totalProteins = totalProteins + currentProtein;
-          });
           return (
             <AccordionItem
               key={index}
-              value={meal.time}
-              borderLeftWidth={4}
+              value={`meal-${index}`}
               marginVertical={5}
-              borderRadius={10}
-              borderLeftColor={colorByDiets(meal.name)}
+              borderRadius={14}
               backgroundColor={COLORS.dark.backgroundCard}>
               <AccordionHeader>
                 <AccordionTrigger>
                   {({isExpanded}) => {
                     return (
-                      <>
+                      <View style={styles.headerRow}>
                         <View
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'flex-start',
-                            alignItems: 'flex-start',
-                          }}>
-                          <View
-                            style={{
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                            }}>
-                            <TextBase
-                              text={meal.name}
-                              color={colorByDiets(meal.name)}
-                              size={16}
-                              fontFamily={'AirbnbCereal_W_Bd'}
-                            />
-                            <TextBase
-                              style={{marginLeft: 5}}
-                              text={`${totalProteins}gr. de proteina`}
-                              color={'#ffff'}
-                              fontFamily={'AirbnbCereal_W_Bd'}
-                            />
-                          </View>
+                          style={[
+                            styles.mealIconBadge,
+                            {backgroundColor: `${accentColor}26`},
+                          ]}>
+                          <FontAwesomeIcon
+                            icon={getMealIcon(meal.name)}
+                            size={16}
+                            color={accentColor}
+                          />
+                        </View>
+                        <View style={styles.headerTextContainer}>
                           <TextBase
-                            text={`${totalCalories} de calorias totales`}
-                            color={'#9DA8C3'}
+                            text={meal.name}
+                            color={'#fff'}
+                            size={16}
+                            fontFamily={'AirbnbCereal_W_Bd'}
+                          />
+                          <TextBase
+                            text={`${foodCount} alimento${
+                              foodCount === 1 ? '' : 's'
+                            }${
+                              hasNutritionData ? ` · ${totalCalories} kcal` : ''
+                            }`}
+                            color={COLORS.dark.textMuted}
                             size={12}
-                            style={{marginTop: 5}}
+                            style={{marginTop: 3}}
                           />
                         </View>
                         {isExpanded ? (
                           <DropDownIcon
                             icon={faMinus}
-                            backgroundColor={colorByDiets(meal.name)}
+                            backgroundColor={accentColor}
                           />
                         ) : (
                           <DropDownIcon
                             icon={faPlus}
-                            backgroundColor={colorByDiets(meal.name)}
+                            backgroundColor={accentColor}
                           />
                         )}
-                      </>
+                      </View>
                     );
                   }}
                 </AccordionTrigger>
               </AccordionHeader>
-              <AccordionContent>
-                {meal.items.map((item, index) => {
-                  const detailedFood = FOOD_DATABASE.filter(
-                    food => food.name === item.food,
-                  )[0];
+              <AccordionContent style={{paddingTop: 0}}>
+                {meal.items.map((item, itemIndex) => {
+                  const detailedFood = findFoodMatch(item.food);
                   return (
                     <View
-                      key={index}
-                      style={{
-                        flex: 1,
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        width: '100%',
-                      }}>
-                      <View
-                        style={{
-                          backgroundColor: COLORS.dark.backgroundCard,
-                          paddingHorizontal: 4,
-                          position: 'relative',
-                          zIndex: 2,
-                          height: 40,
-                          maxWidth: '70%',
-                        }}>
-                        <Text
-                          numberOfLines={2}
-                          style={{
-                            maxWidth: '100%',
-                            flexWrap: 'wrap',
-                            fontFamily: 'AirbnbCereal_W_Bd',
-                            color: '#ffff',
-                          }}>
-                          {`${item.quantity} ${item.unit} ${item.food}`}
-                        </Text>
-                      </View>
-                      <TextBase
-                        text={
-                          '...............................................................................'
-                        }
-                        color={'#ffff'}
-                        numberOfLines={1}
-                        fontFamily={'AirbnbCereal_W_Bd'}
-                        style={{
-                          position: 'absolute',
-                          textAlign: 'center',
-                          maxWidth: DEVICE_WIDTH - 110,
-                        }}
-                      />
-                      <View
-                        style={{
-                          backgroundColor: COLORS.dark.backgroundCard,
-                          paddingHorizontal: 4,
-                          position: 'relative',
-                          zIndex: 2,
-                        }}>
+                      key={itemIndex}
+                      style={[
+                        styles.itemRow,
+                        itemIndex < meal.items.length - 1 &&
+                          styles.itemRowDivider,
+                      ]}>
+                      <View style={{flex: 1, marginRight: 12}}>
                         <TextBase
-                          text={`${detailedFood.calories} Kcal`}
-                          color={'#ffff'}
+                          text={item.food}
                           numberOfLines={1}
+                          color={'#fff'}
                           fontFamily={'AirbnbCereal_W_Bd'}
+                          size={14}
+                        />
+                        <TextBase
+                          text={`${item.quantity} ${item.unit}`}
+                          color={COLORS.dark.textMuted}
+                          fontFamily={'AirbnbCereal_W_Bk'}
+                          size={12}
+                          style={{marginTop: 2}}
                         />
                       </View>
+                      {detailedFood && (
+                        <View
+                          style={[
+                            styles.kcalChip,
+                            {backgroundColor: `${accentColor}26`},
+                          ]}>
+                          <TextBase
+                            text={`${detailedFood.calories} kcal`}
+                            color={accentColor}
+                            numberOfLines={1}
+                            fontFamily={'AirbnbCereal_W_Bd'}
+                            size={12}
+                          />
+                        </View>
+                      )}
                     </View>
                   );
                 })}
@@ -183,3 +151,38 @@ export default function Collapsible({meals}) {
     </Accordion>
   );
 }
+
+const styles = StyleSheet.create({
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+  },
+  mealIconBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTextContainer: {
+    flex: 1,
+    marginLeft: 12,
+    alignItems: 'flex-start',
+  },
+  itemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+  },
+  itemRowDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.dark.backgroundElevated,
+  },
+  kcalChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+});

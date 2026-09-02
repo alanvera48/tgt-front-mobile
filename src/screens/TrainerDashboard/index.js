@@ -1,8 +1,10 @@
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {createDrawerNavigator} from '@react-navigation/drawer';
 
 import DashboardTrainer from '../DashboardTrainer';
+import CustomDrawer from '../../components/Drawer/CustomDrawer';
 
 import {
   faCrown,
@@ -56,7 +58,7 @@ function ChampsStackNavigator() {
   );
 }
 
-export default function TrainerDashboard() {
+function TrainerDashboardTabs() {
   const Tab = createBottomTabNavigator();
   return (
     <Tab.Navigator
@@ -143,5 +145,24 @@ export default function TrainerDashboard() {
         }}
       />
     </Tab.Navigator>
+  );
+}
+
+const Drawer = createDrawerNavigator();
+
+export default function TrainerDashboard() {
+  return (
+    <Drawer.Navigator
+      screenOptions={{
+        headerShown: false,
+        drawerStyle: {backgroundColor: COLORS.dark.background, width: '78%'},
+        overlayColor: 'rgba(0,0,0,0.5)',
+      }}
+      drawerContent={props => <CustomDrawer {...props} />}>
+      <Drawer.Screen
+        name="TrainerDashboardTabs"
+        component={TrainerDashboardTabs}
+      />
+    </Drawer.Navigator>
   );
 }

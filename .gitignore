@@ -71,8 +71,14 @@ yarn-error.log
 
 .env
 .env.development
+.env.production
 .env.local
 .qodo
+
+# Firebase
+GoogleService-Info.plist
+google-services.json
+*-firebase-adminsdk-*.json
 
 # IA Agents
 CLAUDE.md

@@ -10,6 +10,12 @@ import {useShallow} from 'zustand/react/shallow';
 import AppStack from './AppStack';
 import Loading from '../screens/Loading';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {
+  requestUserPermission,
+  getFcmToken,
+  setupNotificationListeners,
+} from '../services/pushNotifications';
+import {useRegisterPushToken} from '../hooks/notifications/queries';
 
 export const navigationRef = createNavigationContainerRef();
 
@@ -22,6 +28,29 @@ export default function AppNav() {
     })),
   );
   const [deepLinkToken, setDeepLinkToken] = useState(null);
+  const registerPushTokenMutation = useRegisterPushToken();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+    (async () => {
+      const granted = await requestUserPermission();
+      if (!granted) {
+        return;
+      }
+      const token = await getFcmToken();
+      if (token) {
+        registerPushTokenMutation.mutate(token);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    const unsubscribe = setupNotificationListeners(navigationRef);
+    return unsubscribe;
+  }, []);
 
   // Define linking configuration
   const linking = {
@@ -91,7 +120,7 @@ export default function AppNav() {
 
   return (
     <GestureHandlerRootView>
-      <NavigationContainer linking={linking}>
+      <NavigationContainer ref={navigationRef} linking={linking}>
         {isAuthenticated ? (
           <AppStack />
         ) : (

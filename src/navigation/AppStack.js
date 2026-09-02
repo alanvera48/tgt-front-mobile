@@ -122,7 +122,7 @@ const AppStack = () => {
           component={DietDetail}
           options={({navigation}) => ({
             headerShown: true,
-            headerTitle: 'Detalle de la dieta',
+            headerTitle: 'Plan de alimentación',
             headerLeftLabelVisible: false,
             headerTintColor: '#ffff',
             headerStyle: {

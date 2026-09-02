@@ -7,6 +7,7 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 import InDashboard from '../../../layouts/InDashboard';
 import {CarouselItemEmptyBig} from '../../../components/CarouselItems';
 import {FlatListHorizontal} from '../../../components/FlatListHorizontal';
+import {DEVICE_HEIGHT} from '../../../constants';
 
 export default function DiscoverUser() {
   const navigation = useNavigation();
@@ -24,7 +25,12 @@ export default function DiscoverUser() {
       containerStyle={{
         paddingHorizontal: 0,
       }}>
-      <View style={{marginTop: 10, paddingBottom: 300}}>
+      <View
+        style={{
+          marginTop: 10,
+          paddingBottom: 300,
+          minHeight: DEVICE_HEIGHT - 220,
+        }}>
         <ListHorizontal title={'Rutinas asignadas'}>
           <FlatListHorizontal
             renderEmptyComponent={() => {

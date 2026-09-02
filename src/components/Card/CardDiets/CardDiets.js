@@ -1,10 +1,7 @@
 import {Dimensions, View, Image, StyleSheet, Pressable} from 'react-native';
 import React from 'react';
 import TextBase from '../../Base/TextBase';
-import Chip from '../../Base/Chip';
 import LinearGradient from 'react-native-linear-gradient';
-import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
-import {faStar} from '@fortawesome/free-solid-svg-icons';
 import {COLORS} from '../../../style/style';
 import {getDietImage} from '../../../utils/diets';
 
@@ -21,8 +18,6 @@ export default function CardDiets({
 }) {
   const cardWidth = customWidth || (screenWidth ? LIST_WIDTH : GRID_WIDTH);
 
-  console.log(item, 'ddasdsa');
-
   return (
     <Pressable
       style={[
@@ -33,13 +28,25 @@ export default function CardDiets({
         {height: 220, width: cardWidth},
       ]}
       onPress={() => onPress(item.id)}>
-      <Chip text={'Today'} />
+      {item?.category && (
+        <View style={styles.categoryChip}>
+          <TextBase
+            size={12}
+            text={item.category}
+            color={'#000000'}
+            fontFamily="AirbnbCereal_W_Bd"
+          />
+        </View>
+      )}
       <Image
         alt="image-diet"
         source={{uri: getDietImage(item)}}
-        width={'100%'}
-        height={'100%'}
-        style={{position: 'absolute', borderRadius: 20}}
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          borderRadius: 20,
+        }}
       />
 
       <LinearGradient
@@ -132,5 +139,15 @@ const styles = StyleSheet.create({
     padding: 5,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  categoryChip: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    zIndex: 2,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
   },
 });

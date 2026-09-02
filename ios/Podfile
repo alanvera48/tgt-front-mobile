@@ -13,6 +13,12 @@ prepare_react_native_project!
 # como static library cuando no se usa use_frameworks!.
 use_modular_headers!
 
+# GoogleSignIn 9.x (vía AppCheckCore ~> 11.0) fuerza GoogleUtilities ~> 8.0,
+# incompatible con la versión de Firebase que trae @react-native-firebase por
+# default (10.20.0, que pide GoogleUtilities ~> 7.8). Se fija una versión de
+# Firebase que ya usa GoogleUtilities 8.x para que ambos pods convivan.
+$FirebaseSDKVersion = '11.2.0'
+
 pod 'react-native-video', :path => '../node_modules/react-native-video/react-native-video.podspec'
 
 rn_maps_path = '../node_modules/react-native-maps'

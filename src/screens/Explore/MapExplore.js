@@ -3,12 +3,15 @@ import {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
 import MapView from 'react-native-maps';
 
 import React, {useEffect, useRef, useState} from 'react';
+import {useQueryClient} from '@tanstack/react-query';
 import {
   ITEM_PREVIEW,
   ITEM_PREVIEW_HEIGHT,
   ITEM_SPACING,
   LATITUDE_DELTA,
   LONGITUDE_DELTA,
+  NEARBY_PLACES_RADIUS_METERS,
+  getNearbyPlaces,
   screen,
 } from '../../utils/getPlaces';
 
@@ -18,7 +21,11 @@ import LinearGradient from 'react-native-linear-gradient';
 import {mapCustomStyle} from '../../style/style';
 
 import ButtonSecundary from '../../components/Buttons/ButtonSecundary';
-import {faList} from '@fortawesome/free-solid-svg-icons';
+import {
+  faList,
+  faLocationCrosshairs,
+  faMagnifyingGlassLocation,
+} from '@fortawesome/free-solid-svg-icons';
 import CardGym from '../../components/Card/CardGym/CardGym';
 import {
   useGetCurrentLocation,
@@ -88,6 +95,60 @@ export default function MapExplore({navigation}) {
     location?.longitude,
   );
 
+  const queryClient = useQueryClient();
+  const [isSearchingNearby, setIsSearchingNearby] = useState(false);
+
+  // Recentra el mapa en la última ubicación conocida, sin pedir el GPS de
+  // nuevo (igual al botón de "mi ubicación" de Google Maps).
+  const onPressLocateMe = () => {
+    if (!location) {
+      return;
+    }
+    mapView.current?.animateToRegion(
+      {
+        latitude: location.latitude,
+        longitude: location.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      },
+      500,
+    );
+  };
+
+  // Vuelve a pedir el GPS y busca gimnasios cerca de esa posición
+  // actualizada. No usamos el refetch de useGetNearbyPlaces porque su
+  // queryFn queda atado a las coordenadas del render anterior.
+  const onPressSearchNearby = async () => {
+    setIsSearchingNearby(true);
+    try {
+      const {data: freshLocation} = await refetchLocation();
+      if (!freshLocation) {
+        return;
+      }
+
+      const freshGyms = await getNearbyPlaces(
+        freshLocation.latitude,
+        freshLocation.longitude,
+        NEARBY_PLACES_RADIUS_METERS,
+      );
+      queryClient.setQueryData(['nearby-places'], freshGyms);
+
+      mapView.current?.animateToRegion(
+        {
+          latitude: freshLocation.latitude,
+          longitude: freshLocation.longitude,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA,
+        },
+        500,
+      );
+      sliderRef.current?.goToSlide(0);
+      setCurrentPlace(undefined);
+    } finally {
+      setIsSearchingNearby(false);
+    }
+  };
+
   if (isLoadingLocation || isLoadingPlaces) {
     return <LoadingScreen backgroundColor={theme.background} />;
   }
@@ -155,6 +216,21 @@ export default function MapExplore({navigation}) {
             alignItems: 'center',
             justifyContent: 'center',
           }}
+        />
+      </View>
+
+      <View style={styles.mapActions}>
+        <ButtonSecundary
+          icon={faMagnifyingGlassLocation}
+          onPress={isSearchingNearby ? undefined : onPressSearchNearby}
+          iconColor={COLORS.dark.textPrimary}
+          style={styles.mapActionButton}
+        />
+        <ButtonSecundary
+          icon={faLocationCrosshairs}
+          onPress={onPressLocateMe}
+          iconColor={COLORS.dark.textPrimary}
+          style={[styles.mapActionButton, {marginTop: 10}]}
         />
       </View>
 
@@ -266,5 +342,20 @@ const styles = StyleSheet.create({
     height: 250,
     bottom: 0,
     padding: 20,
+  },
+  mapActions: {
+    position: 'absolute',
+    zIndex: 9999,
+    right: 16,
+    bottom: 270,
+    alignItems: 'center',
+  },
+  mapActionButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    paddingHorizontal: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

@@ -1,5 +1,12 @@
 import React from 'react';
-import {BaseToast, ErrorToast} from 'react-native-toast-message';
+import {View} from 'react-native';
+import {BaseToast} from 'react-native-toast-message';
+import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
+import {
+  faCircleCheck,
+  faCircleExclamation,
+  faCircleInfo,
+} from '@fortawesome/free-solid-svg-icons';
 
 export const COLORS = {
   light: {},
@@ -109,50 +116,70 @@ export const mapCustomStyle = [
   },
 ];
 
-export const toastConfig = {
-  success: props => (
+const TOAST_VARIANTS = {
+  success: {color: COLORS.dark.success, icon: faCircleCheck},
+  error: {color: COLORS.dark.error, icon: faCircleExclamation},
+  info: {color: COLORS.dark.info, icon: faCircleInfo},
+};
+
+// Alpha hex suffix (RRGGBBAA) sobre el color semántico, para el fondo
+// tenue del ícono — evita un color plano sólido que compita con el resto.
+const renderThemedToast = variant => props => {
+  const {color, icon} = TOAST_VARIANTS[variant];
+
+  return (
     <BaseToast
       {...props}
-      contentContainerStyle={{height: 80}}
-      style={{height: 80, borderLeftColor: '#00a061', borderLeftWidth: 5}}
+      style={{
+        backgroundColor: COLORS.dark.backgroundElevated,
+        borderLeftWidth: 0,
+        borderRadius: 16,
+        minHeight: 64,
+        width: '90%',
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 4},
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 6,
+      }}
+      contentContainerStyle={{
+        paddingHorizontal: 12,
+        paddingVertical: 12,
+      }}
+      text1NumberOfLines={2}
       text2NumberOfLines={2}
       text1Style={{
-        fontSize: 18,
+        fontFamily: 'AirbnbCereal_W_Bd',
+        fontSize: 15,
+        color: COLORS.dark.textWhite,
       }}
       text2Style={{
-        fontSize: 16,
-        color: '#000000',
+        fontFamily: 'AirbnbCereal_W_Bk',
+        fontSize: 13,
+        color: COLORS.dark.textSecondary,
+        marginTop: 2,
       }}
+      renderLeadingIcon={() => (
+        <View
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            backgroundColor: `${color}26`,
+            justifyContent: 'center',
+            alignItems: 'center',
+            alignSelf: 'center',
+            marginLeft: 12,
+          }}>
+          <FontAwesomeIcon icon={icon} size={18} color={color} />
+        </View>
+      )}
     />
-  ),
-  error: props => (
-    <ErrorToast
-      {...props}
-      contentContainerStyle={{height: 80}}
-      style={{height: 80, borderLeftColor: '#f71a1a', borderLeftWidth: 5}}
-      text2NumberOfLines={2}
-      text1Style={{
-        fontSize: 18,
-      }}
-      text2Style={{
-        fontSize: 16,
-        color: '#000000',
-      }}
-    />
-  ),
-  info: props => (
-    <ErrorToast
-      {...props}
-      contentContainerStyle={{height: 80}}
-      style={{height: 80, borderLeftColor: '#0d79c8', borderLeftWidth: 5}}
-      text2NumberOfLines={2}
-      text1Style={{
-        fontSize: 18,
-      }}
-      text2Style={{
-        fontSize: 16,
-        color: '#000000',
-      }}
-    />
-  ),
+  );
+};
+
+export const toastConfig = {
+  success: renderThemedToast('success'),
+  error: renderThemedToast('error'),
+  info: renderThemedToast('info'),
 };

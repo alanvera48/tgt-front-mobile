@@ -78,7 +78,7 @@ const CustomDrawer = props => {
         {...props}
         contentContainerStyle={{backgroundColor: COLORS.dark.background}}>
         <Pressable
-          onPress={() => props.closeDrawer()}
+          onPress={() => navigation.dispatch(DrawerActions.closeDrawer())}
           style={{paddingHorizontal: 20}}>
           {userInfo?.imageUrl ? (
             <Avatar>
