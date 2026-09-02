@@ -26,6 +26,18 @@ function navigateFromNotification(navigationRef, remoteMessage) {
   if (data.type === 'RUTINE_ASSIGNED' && data.rutineId) {
     navigationRef.navigate('RutineDetail', {id: data.rutineId});
   }
+
+  if (data.type === 'DIET_ASSIGNED' && data.dietId) {
+    navigationRef.navigate('DietDetail', {id: data.dietId});
+  }
+
+  if (data.type === 'TRAINER_REQUEST_RECEIVED') {
+    navigationRef.navigate('TrainerDashboard');
+  }
+
+  if (data.type === 'TRAINER_REQUEST_ACCEPTED') {
+    navigationRef.navigate('UserDashboard');
+  }
 }
 
 export function setupNotificationListeners(navigationRef) {
