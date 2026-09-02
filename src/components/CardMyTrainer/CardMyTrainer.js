@@ -24,6 +24,14 @@ export default function CardMyTrainer({
     });
   };
 
+  // El entrenador puede estar registrado por su gimnasio sin haber
+  // completado su propio onboarding: en ese caso onboardingTrainer viene
+  // null y no hay especialidades ni teléfono todavía.
+  const specialtiesText = trainerprofile.onboardingTrainer?.specialties
+    ?.join(', ')
+    ?.replace(/_/g, ' ');
+  const mobileNumber = trainerprofile.onboardingTrainer?.mobileNumber;
+
   return (
     <TouchableOpacity onPress={handleTrainerProfile} activeOpacity={0.9}>
       <LinearGradient
@@ -73,17 +81,17 @@ export default function CardMyTrainer({
                 textTransform: 'capitalize',
               }}
             />
-            <TextBase
-              text={`${trainerprofile.onboardingTrainer?.specialties
-                ?.join(', ')
-                ?.replace(/_/g, ' ')}`}
-              size={14}
-              color={theme.textWhite}
-              lines={2}
-              style={{
-                maxWidth: 230,
-              }}
-            />
+            {specialtiesText && (
+              <TextBase
+                text={specialtiesText}
+                size={14}
+                color={theme.textWhite}
+                lines={2}
+                style={{
+                  maxWidth: 230,
+                }}
+              />
+            )}
           </View>
         </View>
         <View
@@ -111,28 +119,28 @@ export default function CardMyTrainer({
               />
             )}
           </View>
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={() =>
-              Linking.openURL(
-                `whatsapp://send?text=&phone=${trainerprofile?.onboardingTrainer?.mobileNumber}`,
-              )
-            }
-            style={{
-              backgroundColor: '#30D14F',
-              width: 38,
-              height: 38,
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: 50,
-            }}>
-            <Image
-              source={require('../../assets/image/whatsapp.png')}
-              resizeMode="center"
-              style={{width: 21, height: 21}}
-              alt="whatsapp"
-            />
-          </TouchableOpacity>
+          {mobileNumber && (
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() =>
+                Linking.openURL(`whatsapp://send?text=&phone=${mobileNumber}`)
+              }
+              style={{
+                backgroundColor: '#30D14F',
+                width: 38,
+                height: 38,
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderRadius: 50,
+              }}>
+              <Image
+                source={require('../../assets/image/whatsapp.png')}
+                resizeMode="center"
+                style={{width: 21, height: 21}}
+                alt="whatsapp"
+              />
+            </TouchableOpacity>
+          )}
         </View>
       </LinearGradient>
     </TouchableOpacity>

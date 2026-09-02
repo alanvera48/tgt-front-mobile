@@ -23,6 +23,10 @@ const ITEM_WIDTH = screen.width - 2 * ITEM_SPACING - 2 * ITEM_PREVIEW;
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 export default function CardTrainer({index, item: {user}, onPress}) {
+  const specialtiesText = user?.onboardingTrainer?.specialties
+    ?.join(', ')
+    ?.replaceAll('_', ' ');
+
   return (
     <AnimatedTouchable
       key={index}
@@ -75,16 +79,16 @@ export default function CardTrainer({index, item: {user}, onPress}) {
           ratingColor={COLORS.dark.textPrimary}
         />
 
-        <TextBase
-          text={user?.onboardingTrainer?.specialties
-            .join(', ')
-            .replaceAll('_', ' ')}
-          fontFamily={'AirbnbCereal_W_Bk'}
-          color={'#fff'}
-          lines={2}
-          size={16}
-          style={{marginBottom: 0, width: ITEM_WIDTH - 120}}
-        />
+        {specialtiesText && (
+          <TextBase
+            text={specialtiesText}
+            fontFamily={'AirbnbCereal_W_Bk'}
+            color={'#fff'}
+            lines={2}
+            size={16}
+            style={{marginBottom: 0, width: ITEM_WIDTH - 120}}
+          />
+        )}
         <TextBase
           text={`${
             user.onboardingTrainer?.experienceYears ?? 0

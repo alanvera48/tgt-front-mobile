@@ -2,6 +2,7 @@ import {Platform, View} from 'react-native';
 import React from 'react';
 
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {createDrawerNavigator} from '@react-navigation/drawer';
 import {
   faBarsProgress,
   faDumbbell,
@@ -17,8 +18,9 @@ import {COLORS} from '../../style/style';
 // import Progress from '../Progress/Progress';
 import RutinesChamp from '../Rutines/RutinesChamp';
 import {DietsChamp} from '../Diets/DietsChamp';
+import CustomDrawer from '../../components/Drawer/CustomDrawer';
 
-export default function UserDashboard() {
+function UserDashboardTabs() {
   const Tab = createBottomTabNavigator();
 
   return (
@@ -111,5 +113,21 @@ export default function UserDashboard() {
         />
       </Tab.Navigator>
     </View>
+  );
+}
+
+const Drawer = createDrawerNavigator();
+
+export default function UserDashboard() {
+  return (
+    <Drawer.Navigator
+      screenOptions={{
+        headerShown: false,
+        drawerStyle: {backgroundColor: COLORS.dark.background, width: '78%'},
+        overlayColor: 'rgba(0,0,0,0.5)',
+      }}
+      drawerContent={props => <CustomDrawer {...props} />}>
+      <Drawer.Screen name="UserDashboardTabs" component={UserDashboardTabs} />
+    </Drawer.Navigator>
   );
 }

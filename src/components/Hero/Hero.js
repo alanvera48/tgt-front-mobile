@@ -1,25 +1,35 @@
 import {View, StyleSheet, Image} from 'react-native';
 import React from 'react';
-import Chip from '../Base/Chip';
 
 import LinearGradient from 'react-native-linear-gradient';
 import TextBase from '../Base/TextBase';
-import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
-import {faStar} from '@fortawesome/free-solid-svg-icons';
 import {COLORS} from '../../style/style';
+import {getDietImage} from '../../utils/diets';
 
 export default function Hero({item}) {
   return (
     <View style={styles.cardContainer}>
-      <Chip text={'Today'} />
       <Image
-        source={{
-          uri: 'https://rusinol.com/wp-content/uploads/Rusinol-blog-dieta-proteica-que-es-menu-paso-a-paso.jpg',
+        alt="image-diet-hero"
+        source={{uri: getDietImage(item)}}
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          borderRadius: 20,
         }}
-        width={'100%'}
-        height={'100%'}
-        style={{position: 'absolute', borderRadius: 20}}
       />
+
+      {item?.category && (
+        <View style={styles.categoryChip}>
+          <TextBase
+            size={12}
+            text={item.category}
+            color={'#000000'}
+            fontFamily="AirbnbCereal_W_Bd"
+          />
+        </View>
+      )}
 
       <LinearGradient
         start={{x: 0, y: 0}}
@@ -28,33 +38,25 @@ export default function Hero({item}) {
         style={styles.containerGradient}>
         <View style={styles.textContainer}>
           <TextBase
-            text={`${item?.description}`}
-            size={14}
-            lines={3}
-            color={'#FFFFFF'}
-            fontFamily="AirbnbCereal_W_Bk"
-            style={{marginBottom: 5}}
-          />
-          <TextBase
             text={`${item?.name}`}
-            lines={3}
-            size={16}
+            lines={2}
+            size={20}
             color={'#FFFFFF'}
             fontFamily="AirbnbCereal_W_Bd"
-            style={{width: '80%'}}
+            style={{width: '85%'}}
           />
+          {item?.objective && (
+            <TextBase
+              text={item.objective}
+              size={14}
+              lines={2}
+              color={'#D8D8D8'}
+              fontFamily="AirbnbCereal_W_Bk"
+              style={{marginTop: 4}}
+            />
+          )}
         </View>
       </LinearGradient>
-      {/* TODO: Deshabilitado el rating por el momento */}
-      {/* <View style={styles.containerAbsolute}>
-        <TextBase
-          size={12}
-          text={'4.9'}
-          color={'#ffff'}
-          fontFamily="AirbnbCereal_W_Bk"
-        />
-        <FontAwesomeIcon icon={faStar} color={COLORS.dark.textPrimary} size={14} />
-      </View> */}
     </View>
   );
 }
@@ -77,20 +79,15 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginTop: 10,
   },
-  containerAbsolute: {
+  categoryChip: {
     position: 'absolute',
-    backgroundColor: '#454446',
-    bottom: 10,
-    right: 10,
-    width: 60,
-    paddingVertical: 3,
-    paddingHorizontal: 10,
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    top: 10,
+    left: 10,
+    zIndex: 2,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 20,
-    zIndex: 99999,
   },
   containerGradient: {
     position: 'absolute',

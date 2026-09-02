@@ -14,11 +14,13 @@ import {
   Box,
   VStack,
 } from '@gluestack-ui/themed';
+import {DrawerActions, useNavigation} from '@react-navigation/native';
 import {useAuthStore} from '../../store/authStore';
 import {Image} from 'react-native-svg';
 import {COLORS} from '../../style/style';
 
-export default function TopBar({openDrawer}) {
+export default function TopBar() {
+  const navigation = useNavigation();
   const userInfo = useAuthStore(state => state.userInfo);
   return (
     <View
@@ -30,7 +32,7 @@ export default function TopBar({openDrawer}) {
       }}>
       <View style={styles.containerTopBar}>
         <Pressable
-          onPress={() => openDrawer()}
+          onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
           style={{
             flexDirection: 'row',
           }}>

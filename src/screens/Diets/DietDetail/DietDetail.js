@@ -1,13 +1,12 @@
+import {View, StyleSheet} from 'react-native';
+import React from 'react';
+import {Tabs} from '@gluestack-ui/themed';
+import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {
-  Animated,
-  Dimensions,
-  PanResponder,
-  SafeAreaView,
-  StyleSheet,
-  View,
-} from 'react-native';
-import React, {useRef, useState} from 'react';
-// import {DrawerContentScrollView} from '@react-navigation/drawer';
+  faFire,
+  faDrumstickBite,
+  faUtensils,
+} from '@fortawesome/free-solid-svg-icons';
 import Hero from '../../../components/Hero/Hero';
 import InDashboard from '../../../layouts/InDashboard';
 import TextBase from '../../../components/Base/TextBase';
@@ -21,21 +20,31 @@ import {EditButton} from '../../../components/EditButton';
 import {getBadgeConfig} from '../../Rutines/RutineDetail/RutineDetail';
 import InfoBadge from '../../../components/Badge/InfoBadge';
 import {getExpirationStatus} from '../../../utils/rutines';
-
-const screenWidth = Dimensions.get('window').width;
-const drawerWidth = screenWidth * 0.75;
+import {getMealTotals} from '../../../utils/diets';
+import {TabList, TabItem} from '../../../components/TabComponents';
 
 export default function DietDetail({route, navigation}) {
   const userInfo = useAuthStore(state => state.userInfo);
   const {data, isPending} = useGetDietChampsByDietId(route.params.id);
   const {data: shoppingListData} = useGetShoppingListDietById(route.params.id);
 
-  const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const slideAnim = useRef(new Animated.Value(-drawerWidth)).current;
-
   const expirationStatus = getExpirationStatus(data?.alert);
 
   const badgeConfig = getBadgeConfig('dieta', expirationStatus);
+
+  const meals = data?.diet?.meals ?? [];
+  const dailyTotals = meals.reduce(
+    (totals, meal) => {
+      const mealTotals = getMealTotals(meal);
+      return {
+        calories: totals.calories + mealTotals.calories,
+        protein: totals.protein + mealTotals.protein,
+      };
+    },
+    {calories: 0, protein: 0},
+  );
+  const hasDailyNutritionData =
+    dailyTotals.calories > 0 || dailyTotals.protein > 0;
 
   const handleDietEditScreen = () => {
     navigation.navigate('CreateDiet', {
@@ -43,99 +52,12 @@ export default function DietDetail({route, navigation}) {
     });
   };
 
-  // PanResponder para detectar el deslizamiento
-  const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (evt, gestureState) =>
-      Math.abs(gestureState.dx) > 20,
-    onPanResponderMove: (evt, gestureState) => {
-      // Deslizar hacia la derecha para abrir y hacia la izquierda para cerrar
-      if (gestureState.dx > 0) {
-        slideAnim.setValue(gestureState.dx - drawerWidth);
-      } else if (isDrawerOpen) {
-        slideAnim.setValue(gestureState.dx);
-      }
-    },
-    onPanResponderRelease: (evt, gestureState) => {
-      if (gestureState.dx > 50) {
-        openDrawer();
-      } else if (gestureState.dx < -50) {
-        closeDrawer();
-      } else {
-        // Si el deslizamiento es insuficiente en cualquier dirección, vuelve a la posición actual
-        isDrawerOpen ? openDrawer() : closeDrawer();
-      }
-    },
-  });
-
-  const openDrawer = () => {
-    setDrawerOpen(true);
-    Animated.timing(slideAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const closeDrawer = () => {
-    Animated.timing(slideAnim, {
-      toValue: -drawerWidth,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => setDrawerOpen(false));
-  };
-
   if (isPending) {
     return <LoadingScreen backgroundColor={COLORS.dark.background} />;
   }
 
   return (
-    <View
-      style={{
-        flex: 1,
-        height: Dimensions.get('window').height,
-      }}
-      {...panResponder.panHandlers}>
-      <Animated.View
-        style={[styles.drawer, {transform: [{translateX: slideAnim}]}]}>
-        <SafeAreaView
-          style={{
-            flex: 1,
-            backgroundColor: COLORS.dark.background,
-            paddingTop: 60,
-            paddingBottom: 40,
-          }}>
-          {/* <DrawerContentScrollView style={{paddingHorizontal: 30}}>
-            <TextBase
-              text={'Lista de compras'}
-              color={'#fff'}
-              size={24}
-              lines={3}
-              fontFamily={'AirbnbCereal_W_Bd'}
-              style={{marginTop: 20, marginBottom: 20}}
-            />
-            {shoppingListData?.map(item => {
-              return (
-                <View style={{marginBottom: 20}}>
-                  <TextBase
-                    text={`${item.foodName}`}
-                    color={'#fff'}
-                    size={16}
-                    lines={3}
-                    fontFamily={'AirbnbCereal_W_Bk'}
-                  />
-                  <TextBase
-                    text={`Cantidad: ${item.quantity} grs.`}
-                    color={'#fff'}
-                    size={16}
-                    lines={3}
-                    fontFamily={'AirbnbCereal_W_Bk'}
-                  />
-                </View>
-              );
-            })}
-          </DrawerContentScrollView> */}
-        </SafeAreaView>
-      </Animated.View>
+    <View style={{flex: 1}}>
       <InDashboard>
         <View style={{paddingTop: 0, paddingHorizontal: 20, paddingBottom: 30}}>
           <View style={{position: 'absolute', top: 20, right: 30, zIndex: 2}}>
@@ -152,6 +74,92 @@ export default function DietDetail({route, navigation}) {
               />
             </View>
           )}
+
+          <View style={styles.statsRow}>
+            {hasDailyNutritionData && (
+              <>
+                <View style={styles.statTile}>
+                  <View
+                    style={[
+                      styles.statIconBadge,
+                      {backgroundColor: `${COLORS.dark.primary}26`},
+                    ]}>
+                    <FontAwesomeIcon
+                      icon={faFire}
+                      size={16}
+                      color={COLORS.dark.primary}
+                    />
+                  </View>
+                  <TextBase
+                    text={`${dailyTotals.calories}`}
+                    color={'#fff'}
+                    size={18}
+                    fontFamily={'AirbnbCereal_W_Bd'}
+                    style={{marginTop: 8}}
+                  />
+                  <TextBase
+                    text={'Kcal totales'}
+                    color={COLORS.dark.textMuted}
+                    size={12}
+                    fontFamily={'AirbnbCereal_W_Bk'}
+                  />
+                </View>
+                <View style={styles.statTile}>
+                  <View
+                    style={[
+                      styles.statIconBadge,
+                      {backgroundColor: `${COLORS.dark.info}26`},
+                    ]}>
+                    <FontAwesomeIcon
+                      icon={faDrumstickBite}
+                      size={16}
+                      color={COLORS.dark.info}
+                    />
+                  </View>
+                  <TextBase
+                    text={`${dailyTotals.protein}g`}
+                    color={'#fff'}
+                    size={18}
+                    fontFamily={'AirbnbCereal_W_Bd'}
+                    style={{marginTop: 8}}
+                  />
+                  <TextBase
+                    text={'Proteína'}
+                    color={COLORS.dark.textMuted}
+                    size={12}
+                    fontFamily={'AirbnbCereal_W_Bk'}
+                  />
+                </View>
+              </>
+            )}
+            <View style={styles.statTile}>
+              <View
+                style={[
+                  styles.statIconBadge,
+                  {backgroundColor: `${COLORS.dark.success}26`},
+                ]}>
+                <FontAwesomeIcon
+                  icon={faUtensils}
+                  size={16}
+                  color={COLORS.dark.success}
+                />
+              </View>
+              <TextBase
+                text={`${meals.length}`}
+                color={'#fff'}
+                size={18}
+                fontFamily={'AirbnbCereal_W_Bd'}
+                style={{marginTop: 8}}
+              />
+              <TextBase
+                text={'Comidas'}
+                color={COLORS.dark.textMuted}
+                size={12}
+                fontFamily={'AirbnbCereal_W_Bk'}
+              />
+            </View>
+          </View>
+
           <TextBase
             text={'Descripción'}
             color={'#fff'}
@@ -177,19 +185,53 @@ export default function DietDetail({route, navigation}) {
             lines={3}
             color={'#747688'}
           />
-          <TextBase
-            text={'Comidas del día'}
-            color={'#fff'}
-            fontFamily={'AirbnbCereal_W_Bd'}
-            style={{marginVertical: 20}}
-          />
-          <Collapsible meals={data?.diet?.meals} />
-          {/* <View style={{alignItems: 'center', marginVertical: 40}}>
-            <ButtonSecundary
-              onPress={() => openDrawer()}
-              text={'Mostrar lista de compras'}
-            />
-          </View> */}
+          <Tabs value="tab1" style={{marginTop: 10}}>
+            <TabList>
+              <TabItem value="tab1" label="Comidas del día" />
+              <TabItem value="tab2" label="Lista de compras" />
+            </TabList>
+            <Tabs.TabPanels>
+              <Tabs.TabPanel value="tab1">
+                <Collapsible meals={meals} />
+              </Tabs.TabPanel>
+              <Tabs.TabPanel value="tab2">
+                {shoppingListData?.length > 0 ? (
+                  <View style={styles.shoppingListCard}>
+                    {shoppingListData.map((item, index) => (
+                      <View
+                        key={`${item.food}-${index}`}
+                        style={[
+                          styles.shoppingListRow,
+                          index < shoppingListData.length - 1 &&
+                            styles.shoppingListRowDivider,
+                        ]}>
+                        <TextBase
+                          text={item.food}
+                          color={'#fff'}
+                          fontFamily={'AirbnbCereal_W_Bk'}
+                          size={14}
+                          lines={2}
+                          style={{flex: 1, marginRight: 12}}
+                        />
+                        <TextBase
+                          text={`${item.weeklyQuantity} ${item.unit}`}
+                          color={COLORS.dark.textPrimary}
+                          fontFamily={'AirbnbCereal_W_Bd'}
+                          size={14}
+                        />
+                      </View>
+                    ))}
+                  </View>
+                ) : (
+                  <TextBase
+                    text={'Todavía no hay una lista de compras generada.'}
+                    fontFamily={'AirbnbCereal_W_Bk'}
+                    color={COLORS.dark.textMuted}
+                  />
+                )}
+              </Tabs.TabPanel>
+            </Tabs.TabPanels>
+          </Tabs>
         </View>
       </InDashboard>
     </View>
@@ -197,30 +239,37 @@ export default function DietDetail({route, navigation}) {
 }
 
 const styles = StyleSheet.create({
-  drawer: {
-    position: 'absolute',
-    left: 0,
-    top: -40,
-    bottom: 0,
-    width: drawerWidth,
-    shadowColor: '#000',
-    shadowOffset: {width: 5, height: 0},
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    zIndex: 99999,
-    height: Dimensions.get('window').height,
+  statsRow: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.dark.backgroundCard,
+    borderRadius: 16,
+    paddingVertical: 16,
+    marginBottom: 20,
   },
-  drawerText: {
-    fontSize: 18,
-    marginVertical: 10,
-  },
-  content: {
+  statTile: {
     flex: 1,
+    alignItems: 'center',
+  },
+  statIconBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  contentText: {
-    fontSize: 20,
-    marginVertical: 10,
+  shoppingListCard: {
+    backgroundColor: COLORS.dark.backgroundCard,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+  },
+  shoppingListRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+  },
+  shoppingListRowDivider: {
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.dark.backgroundElevated,
   },
 });

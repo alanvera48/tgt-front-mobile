@@ -8,6 +8,7 @@ export const FlatListHorizontal = ({
   renderFooterComponent,
   renderItem,
   style,
+  separatorWidth = 20,
 }) => {
   return (
     <FlatList
@@ -24,16 +25,16 @@ export const FlatListHorizontal = ({
       ListHeaderComponent={
         renderHeaderComponent && data?.length === 0
           ? renderHeaderComponent
-          : () => <View style={{width: 20}} />
+          : () => <View style={{width: separatorWidth}} />
       }
       ListFooterComponent={
         renderFooterComponent
           ? renderFooterComponent
-          : () => <View style={{width: 20}} />
+          : () => <View style={{width: separatorWidth}} />
       }
       data={data}
       renderItem={renderItem}
-      ItemSeparatorComponent={() => <View style={{width: 20}} />}
+      ItemSeparatorComponent={() => <View style={{width: separatorWidth}} />}
       style={style}
     />
   );
