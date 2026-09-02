@@ -6,9 +6,11 @@ import {
 } from 'react-native';
 import React, {useState} from 'react';
 import CardDiets from '../../../components/Card/CardDiets/CardDiets';
+import CardDietsList from '../../../components/Card/CardDiets/CardDietsList';
 import {FlatList} from 'react-native';
 import {useGetDietsCreatedByTrainer} from '../../../hooks/diets/queries';
 import {GrayCardBig} from '../../../components/Card/GrayRectangle/GrayRectangleBig';
+import {CarouselItemSmallAdd} from '../../../components/CarouselItems';
 import {useNavigation} from '@react-navigation/native';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faPlus, faList, faGrip} from '@fortawesome/free-solid-svg-icons';
@@ -99,14 +101,21 @@ export default function DietsCustom() {
           columnWrapperStyle={viewType === 'grid' ? styles.gridRow : null}
           renderItem={({item, index}) => {
             if (index === 0) {
+              if (viewType === 'list') {
+                return (
+                  <View style={styles.listItem}>
+                    <CarouselItemSmallAdd
+                      type="dieta"
+                      viewType="list"
+                      onPressEmptyCard={() => navigation.navigate('CreateDiet')}
+                    />
+                  </View>
+                );
+              }
               return (
-                <View
-                  style={
-                    viewType === 'grid' ? styles.gridItem : styles.listItem
-                  }>
+                <View style={styles.gridItem}>
                   <GrayCardBig
-                    onPress={() => navigation.navigate('CreateDiet')}
-                    screenWidth={viewType === 'list'}>
+                    onPress={() => navigation.navigate('CreateDiet')}>
                     <FontAwesomeIcon
                       icon={faPlus}
                       size={30}
@@ -125,14 +134,16 @@ export default function DietsCustom() {
                 </View>
               );
             }
+            if (viewType === 'list') {
+              return (
+                <View style={styles.listItem}>
+                  <CardDietsList item={item} onPress={handlePress} />
+                </View>
+              );
+            }
             return (
-              <View
-                style={viewType === 'grid' ? styles.gridItem : styles.listItem}>
-                <CardDiets
-                  screenWidth={viewType === 'list'}
-                  item={item}
-                  onPress={() => handlePress(item.id)}
-                />
+              <View style={styles.gridItem}>
+                <CardDiets item={item} onPress={() => handlePress(item.id)} />
               </View>
             );
           }}

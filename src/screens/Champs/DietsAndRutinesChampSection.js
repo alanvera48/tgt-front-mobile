@@ -1,14 +1,12 @@
 import React, {useCallback, useState} from 'react';
-import {
-  ActivityIndicator,
-  ImageBackground,
-  Platform,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {ActivityIndicator, Image, TouchableOpacity, View} from 'react-native';
 import {BlurView} from '@react-native-community/blur';
 import TextBase from '../../components/Base/TextBase';
-import {faPlus, faTrash} from '@fortawesome/free-solid-svg-icons';
+import {
+  faPlus,
+  faTrash,
+  faChevronRight,
+} from '@fortawesome/free-solid-svg-icons';
 import ListHorizontal from '../../components/ListHorizontal/ListHorizontal';
 import {COLORS} from '../../style/style';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
@@ -55,102 +53,145 @@ export const EmptyGrayCard = ({children, onPress, style}) => {
   );
 };
 
-const EmptyRoutineCard = ({index, champId}) => {
+const WEEKDAY_LABELS = [
+  'Lunes',
+  'Martes',
+  'Miércoles',
+  'Jueves',
+  'Viernes',
+  'Sábado',
+  'Domingo',
+];
+
+const DayBadge = ({index}) => (
+  <View style={dayRowStyles.dayBadge}>
+    <TextBase
+      text={String(index + 1)}
+      size={16}
+      color={COLORS.dark.primary}
+      fontFamily="AirbnbCereal_W_Bd"
+    />
+  </View>
+);
+
+const EmptyRoutineRow = ({index, champId}) => {
   const navigation = useNavigation();
 
   return (
     <TouchableOpacity
-      activeOpacity={0.9}
+      activeOpacity={0.85}
       onPress={() =>
         navigation.navigate('AssignRutine', {
           weekday: index + 1,
           champ_id: champId,
         })
       }
-      style={{
-        backgroundColor: '#1C1C1E',
-        width: 160,
-        height: 122,
-        borderRadius: 16,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 10,
-        marginHorizontal: 5,
-      }}>
-      <FontAwesomeIcon
-        icon={faPlus}
-        color={COLORS.dark.primary}
-        size={20}
-        style={{marginBottom: 12}}
+      style={dayRowStyles.row}>
+      <DayBadge index={index} />
+      <View style={dayRowStyles.emptyContent}>
+        <FontAwesomeIcon icon={faPlus} color={COLORS.dark.primary} size={14} />
+        <TextBase
+          text={`Asignar rutina para el ${
+            WEEKDAY_LABELS[index] ?? `día ${index + 1}`
+          }`}
+          size={14}
+          color={COLORS.dark.primary}
+          fontFamily="AirbnbCereal_W_Bd"
+          style={{marginLeft: 10}}
+        />
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+const RoutineRow = ({item, index, onPressDelete}) => {
+  const navigation = useNavigation();
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={() => navigation.navigate('RutineDetail', {id: item.id})}
+      style={dayRowStyles.row}>
+      <DayBadge index={index} />
+      <Image
+        alt="image-routine"
+        source={{uri: getRutineImage(item)}}
+        resizeMode="cover"
+        style={dayRowStyles.thumb}
       />
-      <TextBase
-        text={`Dia ${index + 1}`}
-        size={16}
-        color="#D3D3D3"
-        lines={2}
-        fontFamily="AirbnbCereal_W_Bk"
-        style={{textAlign: 'center'}}
+      <View style={dayRowStyles.textContainer}>
+        <TextBase
+          text={item.name ?? WEEKDAY_LABELS[index] ?? `Día ${index + 1}`}
+          size={15}
+          lines={1}
+          color={'#fff'}
+          fontFamily="AirbnbCereal_W_Bd"
+        />
+        {item.muscleGroup && item.muscleGroup !== 'null' && (
+          <TextBase
+            text={item.muscleGroup}
+            size={13}
+            lines={1}
+            color={COLORS.dark.textMuted}
+            fontFamily="AirbnbCereal_W_Bk"
+            style={{marginTop: 2}}
+          />
+        )}
+      </View>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        hitSlop={10}
+        onPress={onPressDelete}
+        style={dayRowStyles.deleteButton}>
+        <FontAwesomeIcon icon={faTrash} color={'#cd2f2f'} size={16} />
+      </TouchableOpacity>
+      <FontAwesomeIcon
+        icon={faChevronRight}
+        color={COLORS.dark.textMuted}
+        size={14}
       />
     </TouchableOpacity>
   );
 };
 
-const RoutineCard = ({item, index}) => {
-  const navigation = useNavigation();
-
-  return (
-    <TouchableOpacity
-      activeOpacity={0.9}
-      onPress={() => {
-        navigation.navigate('RutineDetail', {
-          id: item.id,
-        });
-      }}>
-      <ImageBackground
-        alt="image-routine"
-        source={{uri: getRutineImage(item)}}
-        resizeMode="cover"
-        key={index}
-        style={{
-          width: 160,
-          height: 122,
-          borderRadius: 16,
-          marginBottom: 10,
-          marginHorizontal: 5,
-        }}
-        imageStyle={{borderRadius: 16}}>
-        <View
-          style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.65)',
-            width: 160,
-            height: 122,
-            borderRadius: 16,
-            justifyContent: 'center',
-          }}>
-          <TextBase
-            text={`Dia ${index + 1}`}
-            size={22}
-            color="#D3D3D3"
-            lines={2}
-            fontFamily={
-              Platform.OS === 'ios' ? 'Akira Expanded' : 'AkiraExpanded'
-            }
-            style={{textAlign: 'center'}}
-          />
-          {item.muscleGroup !== 'null' && (
-            <TextBase
-              text={item.muscleGroup}
-              size={16}
-              color={COLORS.dark.textPrimary}
-              lines={2}
-              fontFamily="AirbnbCereal_W_Bd"
-              style={{textAlign: 'center', marginTop: 6}}
-            />
-          )}
-        </View>
-      </ImageBackground>
-    </TouchableOpacity>
-  );
+const dayRowStyles = {
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.dark.backgroundCard,
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    marginBottom: 10,
+  },
+  dayBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(223, 72, 0, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  thumb: {
+    width: 48,
+    height: 48,
+    borderRadius: 10,
+  },
+  textContainer: {
+    flex: 1,
+    marginLeft: 12,
+    marginRight: 8,
+  },
+  emptyContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  deleteButton: {
+    padding: 6,
+    marginRight: 4,
+  },
 };
 
 export const DietsAndRutinesChampSection = ({data, champ_id}) => {
@@ -279,55 +320,30 @@ export const DietsAndRutinesChampSection = ({data, champ_id}) => {
             title={'Rutinas asignadas'}
             showBrowseAll={false}
             handleToAll={() => {}}>
-            <View
-              style={{
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                alignSelf: 'center',
-                justifyContent: 'flex-start',
-                maxWidth: 342,
-                marginTop: 20,
-              }}>
-              {rutines?.map((item, index) => {
-                if (item.rutine) {
-                  return (
-                    <View>
-                      <RoutineCard
-                        item={item.rutine}
-                        index={index}
-                        champId={champ_id}
-                      />
-                      <TouchableOpacity
-                        activeOpacity={0.9}
-                        onPress={() => {
-                          setBody({
-                            user_id: champ_id,
-                            rutine_id: item.rutine.id,
-                            assigned_day: index + 1,
-                          });
-                          setVisible(true);
-                        }}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          right: 4,
-                          width: 20,
-                          height: 30,
-                          margin: 12,
-                        }}>
-                        <FontAwesomeIcon
-                          icon={faTrash}
-                          color={'#cd2f2f'}
-                          size={20}
-                          style={{marginBottom: 12}}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  );
-                } else {
-                  return <EmptyRoutineCard index={index} champId={champ_id} />;
-                }
-              })}
+            <View style={{paddingHorizontal: 20, marginTop: 12}}>
+              {rutines?.map((item, index) =>
+                item.rutine ? (
+                  <RoutineRow
+                    key={item.rutine.id ?? index}
+                    item={item.rutine}
+                    index={index}
+                    onPressDelete={() => {
+                      setBody({
+                        user_id: champ_id,
+                        rutine_id: item.rutine.id,
+                        assigned_day: index + 1,
+                      });
+                      setVisible(true);
+                    }}
+                  />
+                ) : (
+                  <EmptyRoutineRow
+                    key={`empty-${index}`}
+                    index={index}
+                    champId={champ_id}
+                  />
+                ),
+              )}
             </View>
           </ListHorizontal>
         )}

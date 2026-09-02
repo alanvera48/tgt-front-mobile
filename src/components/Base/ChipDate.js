@@ -1,12 +1,13 @@
 /* eslint-disable react/react-in-jsx-scope */
 import {View} from 'react-native';
 import TextBase from './TextBase';
+import {COLORS} from '../../style/style';
 
 const ChipColorText = enabled => {
   let color, text;
   if (!enabled) {
-    color = '#059669';
-    text = 'Deshabilitado';
+    color = COLORS.dark.primaryLight;
+    text = 'Pendiente';
   }
   return {color, text};
 };
@@ -19,9 +20,8 @@ export default function ChipDate({enabled}) {
       style={{
         position: 'absolute',
         flex: 1,
-        padding: 5,
-        // width: '75',
-        // height: 28,
+        paddingVertical: 4,
+        paddingHorizontal: 10,
         backgroundColor: color,
         top: 10,
         left: 10,
@@ -31,7 +31,12 @@ export default function ChipDate({enabled}) {
         borderRadius: 20,
         zIndex: 9,
       }}>
-      <TextBase size={12} text={text} fontFamily="AirbnbCereal_W_Bk" />
+      <TextBase
+        size={12}
+        text={text}
+        color="#fff"
+        fontFamily="AirbnbCereal_W_Bd"
+      />
     </View>
   );
 }

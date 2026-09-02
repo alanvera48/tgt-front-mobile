@@ -70,20 +70,12 @@ export default function LogIn({navigation}) {
     useLogInWithApple();
 
   const handleAuthSuccess = data => {
-    // Rechazar trainers en la app móvil
-    if (data.user.role === 'TRAINER') {
-      Toast.show({
-        type: 'info',
-        text1: 'Información',
-        text2: 'Podes entrar a tu cuenta de trainer en nuestra versión web!',
-      });
-      return;
-    }
-
     AsyncStorage.setItem('USER_PASS_FIRST', 'true');
     updateUserState(data.user);
     checkAuth();
-    navigation.navigate('UserDashboard');
+    navigation.navigate(
+      data.user.role === 'TRAINER' ? 'TrainerDashboard' : 'UserDashboard',
+    );
   };
 
   const onSubmit = async user => {

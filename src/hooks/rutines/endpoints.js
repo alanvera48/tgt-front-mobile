@@ -38,6 +38,24 @@ export const createOrUpdateRutine = async (data, rutine_id = null) => {
   return response.data;
 };
 
+export const createRutineHeader = async data => {
+  const response = await axiosInstance.post('/api/rutines', data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+export const createRutineExercise = async data => {
+  const response = await axiosInstance.post('/api/rutines/exercise', data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
 export const assignRutine = async data => {
   const response = await axiosInstance.post(
     '/api/rutinesxchamps/assign-rutine',
