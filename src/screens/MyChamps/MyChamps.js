@@ -13,6 +13,8 @@ export default function MyChamps() {
     isRefetching: isRefetchingChamps,
   } = useGetMyChamps();
 
+  const pendingCount = champs?.filter(champ => champ.enabled === false).length;
+
   return (
     <CustomDrawerContainer>
       <InDashboard
@@ -23,7 +25,7 @@ export default function MyChamps() {
           <TabList>
             <TabItem value="tab1" label="Todos" />
             <TabItem value="tab2" label="Últimos" />
-            <TabItem value="tab3" label="Sin aceptar" />
+            <TabItem value="tab3" label="Sin aceptar" badge={pendingCount} />
           </TabList>
 
           <Tabs.TabPanels>

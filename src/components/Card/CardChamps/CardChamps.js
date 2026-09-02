@@ -9,6 +9,7 @@ import {
   HStack,
 } from '@gluestack-ui/themed';
 import {COLORS} from '../../../style/style';
+import {AcceptChampButton} from './AcceptChampButton';
 
 export default function CardChamps({
   item,
@@ -61,6 +62,9 @@ export default function CardChamps({
               style={{marginTop: 6}}
             />
           </View>
+          {!item.enabled && (
+            <AcceptChampButton relationId={item.id} viewType="list" />
+          )}
         </HStack>
       </TouchableOpacity>
     );
@@ -110,13 +114,16 @@ export default function CardChamps({
           style={{marginTop: 6, textTransform: 'capitalize'}}
         />
       </View>
+      {!item.enabled && (
+        <AcceptChampButton relationId={item.id} viewType="grid" />
+      )}
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   touchableContainer: {
-    height: 177,
+    minHeight: 177,
     position: 'relative',
     backgroundColor: COLORS.dark.backgroundCard,
     display: 'flex',

@@ -7,39 +7,103 @@ import {
   EmptyCardSmall,
   GrayCardSmall,
 } from '../Card/GrayRectangle/GrayRectangleSmall';
-import {View} from 'react-native';
+import {StyleSheet, TouchableOpacity, View} from 'react-native';
 import {COLORS} from '../../style/style';
 
-export const CarouselItemSmallAdd = ({onPressEmptyCard, type, style}) => {
-  return (
-    <GrayCardSmall
-      onPress={onPressEmptyCard}
-      type={'champ'}
-      style={[{marginRight: 20}, style]}>
-      <View
-        style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingHorizontal: 18,
-        }}>
-        <FontAwesomeIcon
-          icon={faPlus}
-          size={30}
-          color={COLORS.dark.primary}
-          style={{marginBottom: 10}}
-        />
+export const CarouselItemSmallAdd = ({
+  onPressEmptyCard,
+  type,
+  style,
+  viewType = 'grid',
+}) => {
+  if (viewType === 'list') {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={onPressEmptyCard}
+        style={[addStyles.listContainer, style]}>
+        <View style={addStyles.iconCircleList}>
+          <FontAwesomeIcon
+            icon={faPlus}
+            size={18}
+            color={COLORS.dark.primary}
+          />
+        </View>
         <TextBase
           text={`Agregar ${type}`}
-          lines={2}
           size={16}
-          color={'#ffff'}
-          fontFamily="AirbnbCereal_W_Bk"
-          style={{textAlign: 'center'}}
+          color={COLORS.dark.primary}
+          fontFamily="AirbnbCereal_W_Bd"
+          style={{marginLeft: 14}}
         />
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={onPressEmptyCard}
+      style={[addStyles.gridContainer, style]}>
+      <View style={addStyles.iconCircleGrid}>
+        <FontAwesomeIcon icon={faPlus} size={22} color={COLORS.dark.primary} />
       </View>
-    </GrayCardSmall>
+      <TextBase
+        text={`Agregar ${type}`}
+        lines={2}
+        size={14}
+        color={COLORS.dark.primary}
+        fontFamily="AirbnbCereal_W_Bd"
+        style={{textAlign: 'center', marginTop: 12, paddingHorizontal: 10}}
+      />
+    </TouchableOpacity>
   );
 };
+
+const addStyles = StyleSheet.create({
+  gridContainer: {
+    width: 147,
+    height: 177,
+    marginHorizontal: 5,
+    marginBottom: 15,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: COLORS.dark.primary,
+    backgroundColor: 'rgba(223, 72, 0, 0.06)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  listContainer: {
+    width: '100%',
+    height: 80,
+    marginBottom: 10,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: COLORS.dark.primary,
+    backgroundColor: 'rgba(223, 72, 0, 0.06)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  iconCircleGrid: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(223, 72, 0, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconCircleList: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(223, 72, 0, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
 
 export const CarouselItemSmallMore = ({handleAll}) => {
   return (

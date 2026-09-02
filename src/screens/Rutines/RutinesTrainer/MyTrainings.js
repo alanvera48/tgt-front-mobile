@@ -2,9 +2,11 @@ import React, {useState} from 'react';
 import InDashboard from '../../../layouts/InDashboard';
 import {View, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
 import Card from '../../../components/Card/Card';
+import CardRutineList from '../../../components/Card/CardRutineList';
 import {useNavigation} from '@react-navigation/native';
 import LoadingScreen from '../../LoadingScreen/LoadingScreen';
 import {GrayCardBig} from '../../../components/Card/GrayRectangle/GrayRectangleBig';
+import {CarouselItemSmallAdd} from '../../../components/CarouselItems';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import TextBase from '../../../components/Base/TextBase';
 import {useGetMyRutines} from '../../../hooks/rutines/queries';
@@ -80,14 +82,23 @@ export const MyTrainings = () => {
           columnWrapperStyle={viewType === 'grid' ? styles.gridRow : null}
           renderItem={({item, index}) => {
             if (index === 0) {
+              if (viewType === 'list') {
+                return (
+                  <View style={styles.listItem}>
+                    <CarouselItemSmallAdd
+                      type="rutina"
+                      viewType="list"
+                      onPressEmptyCard={() =>
+                        navigation.navigate('CreateRutine')
+                      }
+                    />
+                  </View>
+                );
+              }
               return (
-                <View
-                  style={
-                    viewType === 'grid' ? styles.gridItem : styles.listItem
-                  }>
+                <View style={styles.gridItem}>
                   <GrayCardBig
-                    onPress={() => navigation.navigate('CreateRutine')}
-                    screenWidth={viewType === 'list'}>
+                    onPress={() => navigation.navigate('CreateRutine')}>
                     <FontAwesomeIcon
                       icon={faPlus}
                       size={30}
@@ -106,14 +117,19 @@ export const MyTrainings = () => {
                 </View>
               );
             }
+            if (viewType === 'list') {
+              return (
+                <View style={styles.listItem}>
+                  <CardRutineList
+                    item={item}
+                    navigate={() => handlePress(item.id)}
+                  />
+                </View>
+              );
+            }
             return (
-              <View
-                style={viewType === 'grid' ? styles.gridItem : styles.listItem}>
-                <Card
-                  screenWidth={viewType === 'list'}
-                  item={item}
-                  navigate={() => handlePress(item.id)}
-                />
+              <View style={styles.gridItem}>
+                <Card item={item} navigate={() => handlePress(item.id)} />
               </View>
             );
           }}

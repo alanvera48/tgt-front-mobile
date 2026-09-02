@@ -2,6 +2,8 @@ import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {
   assignRutine,
   createOrUpdateRutine,
+  createRutineHeader,
+  createRutineExercise,
   getChampRutines,
   getChampRutinesAsTrainer,
   getMyRutines,
@@ -41,6 +43,24 @@ export const useCreateOrUpdateRutineMutation = rutine_id => {
     onSuccess: () => {
       queryClient.invalidateQueries({queryKey: ['my-rutines']});
     },
+  });
+};
+
+export const useCreateRutineHeaderMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: ['create-rutine-header'],
+    mutationFn: data => createRutineHeader(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ['my-rutines']});
+    },
+  });
+};
+
+export const useCreateRutineExerciseMutation = () => {
+  return useMutation({
+    mutationKey: ['create-rutine-exercise'],
+    mutationFn: data => createRutineExercise(data),
   });
 };
 

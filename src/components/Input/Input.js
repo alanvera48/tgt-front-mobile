@@ -14,6 +14,8 @@ export default function InputCustom({
   keyboardType,
   readOnly = false,
   maxLength,
+  multiline = false,
+  numberOfLines,
 }) {
   const errorColor = error ? COLORS.dark.error : undefined;
 
@@ -35,12 +37,17 @@ export default function InputCustom({
         <View
           style={[
             styles.inputContainer,
+            multiline && styles.inputContainerMultiline,
             errorColor && {borderColor: errorColor},
             style,
           ]}>
           {label && <Text style={styles.label}>{label}</Text>}
           <TextInput
-            style={[styles.input, errorColor && {color: errorColor}]}
+            style={[
+              styles.input,
+              multiline && styles.inputMultiline,
+              errorColor && {color: errorColor},
+            ]}
             placeholder={placeholder}
             placeholderTextColor={errorColor || COLORS.dark.gray}
             value={value}
@@ -49,7 +56,9 @@ export default function InputCustom({
             keyboardType={keyboardType ?? 'default'}
             editable={!readOnly}
             autoCorrect={false}
-            textAlignVertical="center"
+            multiline={multiline}
+            numberOfLines={numberOfLines}
+            textAlignVertical={multiline ? 'top' : 'center'}
             maxLength={maxLength}
           />
           {icon && <Icon name={icon} />}
@@ -71,6 +80,11 @@ const styles = StyleSheet.create({
     position: 'relative',
     paddingHorizontal: 16,
   },
+  inputContainerMultiline: {
+    alignItems: 'flex-start',
+    paddingVertical: 14,
+    minHeight: 90,
+  },
   label: {
     position: 'absolute',
     top: -5,
@@ -88,6 +102,11 @@ const styles = StyleSheet.create({
     fontFamily: 'AirbnbCereal_W_Bk',
     color: '#fff',
     height: 54,
+  },
+  inputMultiline: {
+    height: undefined,
+    minHeight: 60,
+    paddingTop: 18,
   },
   errorText: {
     color: COLORS.dark.error,

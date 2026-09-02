@@ -9,6 +9,7 @@ import {
   HStack,
 } from '@gluestack-ui/themed';
 import {COLORS} from '../../../style/style';
+import {AcceptChampButton} from './AcceptChampButton';
 
 export default function CardChampsList({item, navigateToScreen}) {
   return (
@@ -56,6 +57,9 @@ export default function CardChampsList({item, navigateToScreen}) {
             style={{marginTop: 6}}
           />
         </View>
+        {!item.enabled && (
+          <AcceptChampButton relationId={item.id} viewType="list" />
+        )}
       </HStack>
     </TouchableOpacity>
   );

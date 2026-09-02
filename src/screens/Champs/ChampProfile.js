@@ -120,7 +120,14 @@ export default function ChampProfile({route, navigation}) {
                   fontFamily="AirbnbCereal_W_Bd"
                 />
                 <TextBase
-                  text={data?.user?.address}
+                  text={
+                    [
+                      data?.user?.onboardingUser?.city,
+                      data?.user?.onboardingUser?.province,
+                    ]
+                      .filter(Boolean)
+                      .join(', ') || 'Ubicación no disponible'
+                  }
                   size={16}
                   lines={2}
                   color={COLORS.dark.textPrimary}
