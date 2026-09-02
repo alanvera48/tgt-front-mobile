@@ -65,6 +65,47 @@ fi
 [ -f .env.development ] || cp .env .env.development
 [ -f .env.production ] || cp .env .env.production
 
+echo "===== GoogleService-Info.plist (gitignored) ====="
+# Xcode Archive copia este plist al .app. No va en git; en Cloud hay que materializarlo.
+GOOGLE_PLIST="${CI_PRIMARY_REPOSITORY_PATH}/ios/thegoodtrainer/GoogleService-Info.plist"
+cat > "$GOOGLE_PLIST" <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>235032023177-8mtth4j90mus2t1qprle5v33773iurac.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.235032023177-8mtth4j90mus2t1qprle5v33773iurac</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAJq_C6f4UDqIjBvIYpUdGsjosdhhCX93M</string>
+	<key>GCM_SENDER_ID</key>
+	<string>235032023177</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.thegoodtrainer.app</string>
+	<key>PROJECT_ID</key>
+	<string>goodtrainer</string>
+	<key>STORAGE_BUCKET</key>
+	<string>goodtrainer.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:235032023177:ios:126149fe63627171aa7658</string>
+</dict>
+</plist>
+EOF
+echo "wrote ${GOOGLE_PLIST}"
+
 echo "===== npm install ====="
 npm install --legacy-peer-deps
 
