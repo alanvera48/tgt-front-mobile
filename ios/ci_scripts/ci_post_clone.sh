@@ -145,7 +145,42 @@ rm -rf "${HOME}/Library/Caches/CocoaPods/Pods/External/boost" || true
 
 echo "===== pod install ====="
 cd ios
-pod install
+
+# Xcode Cloud a menudo timeout-ea el CDN de CocoaPods (raw.githubusercontent.com).
+# Menos paralelismo + reintentos evitan el falso negativo.
+export COCOAPODS_DISABLE_STATS=true
+export GIT_HTTP_MAX_REQUESTS=1
+
+pod_install_with_retries() {
+  max=6
+  n=1
+  delay=20
+  while [ "$n" -le "$max" ]; do
+    echo "pod install attempt ${n}/${max}"
+    if pod install; then
+      echo "pod install OK on attempt ${n}"
+      return 0
+    fi
+    echo "pod install failed (typical Xcode Cloud CocoaPods CDN timeout)"
+    # A mitad de los reintentos, recrear el spec repo CDN por si quedó a medias.
+    if [ "$n" -eq 3 ]; then
+      echo "resetting CocoaPods trunk CDN repo"
+      pod repo remove trunk >/dev/null 2>&1 || true
+    fi
+    n=$((n + 1))
+    if [ "$n" -le "$max" ]; then
+      echo "retrying in ${delay}s..."
+      sleep "$delay"
+      delay=$((delay + 15))
+    fi
+  done
+  return 1
+}
+
+if ! pod_install_with_retries; then
+  echo "ERROR: pod install failed after retries (CocoaPods CDN / GitHub)"
+  exit 1
+fi
 
 echo "===== strip Hermes bitcode (App Store Connect lo rechaza) ====="
 if [ -f scripts/strip-hermes-bitcode.sh ]; then
