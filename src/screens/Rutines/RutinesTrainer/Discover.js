@@ -1,5 +1,5 @@
 import {View, StyleSheet, Dimensions} from 'react-native';
-import React from 'react';
+import React, {useMemo, useState} from 'react';
 
 import ListHorizontal from '../../../components/ListHorizontal/ListHorizontal';
 
@@ -22,6 +22,16 @@ import {FlatListHorizontal} from '../../../components/FlatListHorizontal';
 export default function Discover() {
   const navigation = useNavigation();
   const {data: rutines} = useGetMyRutines();
+  const [selectedType, setSelectedType] = useState(null);
+
+  const filteredRutines = useMemo(() => {
+    if (!selectedType) {
+      return rutines?.data || [];
+    }
+    return (rutines?.data || []).filter(
+      rutine => rutine.rutineType === selectedType,
+    );
+  }, [rutines, selectedType]);
 
   const navigateToRutineDetail = id => {
     navigation.navigate('RutineDetail', {
@@ -33,7 +43,10 @@ export default function Discover() {
     <InDashboard containerStyle={{paddingHorizontal: 0}}>
       <View style={{marginTop: 10, paddingBottom: 300}}>
         <View style={styles.containerCategories}>
-          <CarouselCategory />
+          <CarouselCategory
+            selectedType={selectedType}
+            onSelectType={setSelectedType}
+          />
         </View>
         <ListHorizontal
           // TODO: deshabiltado temporalmente
@@ -72,16 +85,16 @@ export default function Discover() {
         </ListHorizontal>
 
         <ListHorizontal
-          title={'Últimas Rutinas'}
+          title={selectedType ? 'Rutinas filtradas' : 'Últimas Rutinas'}
           showBrowseAll={rutines?.data?.length > 0}
           handleToAll={() =>
-            navigation.replace('TrainerDashboard', {
+            navigation.navigate('TrainerDashboard', {
               screen: 'Rutines',
               params: {activeTab: 'tab2'},
             })
           }>
           <FlatListHorizontal
-            data={rutines?.data || []}
+            data={filteredRutines}
             renderHeaderComponent={() => (
               <View style={{paddingLeft: 20}}>
                 <CarouselItemBigAdd
@@ -94,7 +107,7 @@ export default function Discover() {
             renderFooterComponent={() => {
               return (
                 <View style={{paddingRight: 20}}>
-                  {rutines?.data?.length > 5 && (
+                  {filteredRutines.length > 5 && (
                     <CarouselItemBigMore handleAll={() => {}} />
                   )}
                 </View>
