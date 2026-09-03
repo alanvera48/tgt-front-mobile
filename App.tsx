@@ -48,7 +48,12 @@ function App(): JSX.Element {
   const [initialUrlHandled, setInitialUrlHandled] = useState(false);
 
   useEffect(() => {
-    SplashScreen.hide();
+    // Espera al primer frame renderizado (la pantalla de Loading, con el
+    // mismo logo) antes de ocultar el splash nativo, para evitar un
+    // parpadeo en blanco entre ambos.
+    requestAnimationFrame(() => {
+      SplashScreen.hide();
+    });
     initAuth();
   }, [initAuth]);
 

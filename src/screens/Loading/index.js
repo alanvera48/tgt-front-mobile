@@ -1,36 +1,53 @@
 import React, {useEffect, useRef} from 'react';
 import {Animated, StyleSheet, View, Easing} from 'react-native';
-import AnimatedLogo from '../../components/Icon/AnimatedLogo';
+import LottieView from 'lottie-react-native';
 import {COLORS} from '../../style/style';
 
 export default function Loading() {
-  const pulse = useRef(new Animated.Value(0.85)).current;
+  const fadeIn = useRef(new Animated.Value(0)).current;
+  const breathe = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    const animation = Animated.loop(
+    // Arranca invisible y aparece con un fundido rápido para no generar un
+    // corte brusco justo cuando el splash nativo (mismo logo) se oculta.
+    Animated.timing(fadeIn, {
+      toValue: 1,
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeIn]);
+
+  const startBreathing = () => {
+    // Una vez que el logo termina de armarse, lo dejamos "respirando" en
+    // loop para que se sienta vivo mientras se resuelve el login.
+    Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, {
-          toValue: 1,
-          duration: 700,
+        Animated.timing(breathe, {
+          toValue: 1.06,
+          duration: 800,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-        Animated.timing(pulse, {
-          toValue: 0.85,
-          duration: 700,
+        Animated.timing(breathe, {
+          toValue: 1,
+          duration: 800,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
       ]),
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [pulse]);
+    ).start();
+  };
 
   return (
     <View style={styles.container}>
-      <Animated.View style={{transform: [{scale: pulse}], opacity: pulse}}>
-        <AnimatedLogo size={120} />
+      <Animated.View style={{opacity: fadeIn, transform: [{scale: breathe}]}}>
+        <LottieView
+          source={require('../../assets/lottie-animations/logo.json')}
+          autoPlay
+          loop={false}
+          onAnimationFinish={startBreathing}
+          style={styles.logo}
+        />
       </Animated.View>
     </View>
   );
@@ -42,5 +59,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.dark.background,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  logo: {
+    width: 130,
+    height: 170,
   },
 });

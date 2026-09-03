@@ -60,7 +60,6 @@ export default function SignUp({navigation, route}) {
     defaultValues: {
       firstName: devConfig.firstName,
       lastName: devConfig.lastName,
-      username: devConfig.username,
       email: devConfig.signUpEmail,
       password: devConfig.password,
       repeatPassword: devConfig.password,
@@ -311,21 +310,6 @@ export default function SignUp({navigation, route}) {
               />
             </View>
           </View>
-
-          <Controller
-            control={control}
-            render={({field: {onChange, value}}) => (
-              <InputCustom
-                placeholder="Nombre de usuario"
-                value={value}
-                onChangeText={value => onChange(value)}
-                error={errors.username}
-                style={styles.input}
-              />
-            )}
-            name="username"
-            rules={{required: 'El nombre de usuario es requerido'}}
-          />
 
           <Controller
             control={control}

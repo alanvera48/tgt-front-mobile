@@ -100,7 +100,6 @@ const DEV_VALUES = {
   // ── SignUp (identidad random por reload) ──────────────
   firstName: RANDOM_IDENTITY.firstName,
   lastName: RANDOM_IDENTITY.lastName,
-  username: RANDOM_IDENTITY.username,
   signUpEmail: RANDOM_IDENTITY.signUpEmail,
 
   // ── Onboarding Champ (General) ────────────────────────
