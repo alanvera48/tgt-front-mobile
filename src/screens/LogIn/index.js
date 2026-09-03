@@ -275,9 +275,7 @@ export default function LogIn({navigation}) {
         </HStack>
         <TouchableOpacity
           style={[styles.registerButton, {bottom: 40 + insets.bottom}]}
-          // TODO: Volver a habilitar selección de rol cuando agregemos versión mobile para trainers
-          // onPress={() => navigation.navigate('Onboarding')}
-          onPress={() => navigation.navigate('SignUp', {role: 'CHAMP'})}>
+          onPress={() => navigation.navigate('Onboarding')}>
           <View style={styles.registerContent}>
             <TextBase
               text="No tenes una cuenta?"

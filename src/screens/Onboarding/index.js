@@ -3,34 +3,92 @@ import {
   StyleSheet,
   Animated,
   TouchableOpacity,
-  Image,
+  Easing,
 } from 'react-native';
 import React, {useEffect, useRef} from 'react';
 import TextBase from '../../components/Base/TextBase';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
-import {faDumbbell, faTrophy} from '@fortawesome/free-solid-svg-icons';
-import AnimatedLogo from '../../components/Icon/AnimatedLogo';
-import LinearGradient from 'react-native-linear-gradient';
+import {
+  faDumbbell,
+  faTrophy,
+  faChevronLeft,
+  faChevronRight,
+} from '@fortawesome/free-solid-svg-icons';
+import LottieView from 'lottie-react-native';
+import AuthBackground from '../../components/Background/AuthBackground';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {COLORS} from '../../style/style';
 
+const RoleCard = ({icon, title, subtitle, onPress}) => (
+  <TouchableOpacity activeOpacity={0.8} onPress={onPress} style={styles.card}>
+    <View style={styles.iconBadge}>
+      <FontAwesomeIcon icon={icon} size={20} color={COLORS.dark.primary} />
+    </View>
+    <View style={styles.cardText}>
+      <TextBase
+        text={title}
+        color={'#fff'}
+        size={17}
+        fontFamily={'AirbnbCereal_W_Bd'}
+      />
+      <TextBase
+        text={subtitle}
+        color={COLORS.dark.textMuted}
+        size={13}
+        lines={2}
+        fontFamily={'AirbnbCereal_W_Bk'}
+        style={styles.cardSubtitle}
+      />
+    </View>
+    <FontAwesomeIcon
+      icon={faChevronRight}
+      size={16}
+      color={COLORS.dark.textMuted}
+    />
+  </TouchableOpacity>
+);
+
 export default function Onboarding({navigation}) {
+  const insets = useSafeAreaInsets();
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const translateAnim = useRef(new Animated.Value(24)).current;
+  const breathe = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 1000,
+        duration: 700,
         useNativeDriver: true,
       }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 800,
+      Animated.timing(translateAnim, {
+        toValue: 0,
+        duration: 700,
         useNativeDriver: true,
       }),
     ]).start();
-  }, [fadeAnim, scaleAnim]);
+  }, [fadeAnim, translateAnim]);
+
+  const startBreathing = () => {
+    // Una vez que el logo termina de armarse, lo dejamos "respirando" en
+    // loop para que se sienta vivo.
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(breathe, {
+          toValue: 1.06,
+          duration: 800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(breathe, {
+          toValue: 1,
+          duration: 800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+  };
 
   const onPressTrainer = () => {
     navigation.navigate('SignUp', {role: 'TRAINER'});
@@ -42,75 +100,68 @@ export default function Onboarding({navigation}) {
 
   return (
     <View style={styles.container}>
+      <AuthBackground />
+
+      {navigation.canGoBack() && (
+        <TouchableOpacity
+          hitSlop={10}
+          style={[styles.backButton, {top: insets.top + 12}]}
+          onPress={() => navigation.goBack()}>
+          <FontAwesomeIcon icon={faChevronLeft} size={22} color="#fff" />
+        </TouchableOpacity>
+      )}
+
       <Animated.View
         style={[
           styles.content,
           {
             opacity: fadeAnim,
-            transform: [{scale: scaleAnim}],
+            transform: [{translateY: translateAnim}],
           },
         ]}>
         <View style={styles.mainContent}>
-          <AnimatedLogo size={160} />
+          <Animated.View style={{transform: [{scale: breathe}]}}>
+            <LottieView
+              source={require('../../assets/lottie-animations/logo.json')}
+              autoPlay
+              loop={false}
+              onAnimationFinish={startBreathing}
+              style={styles.logo}
+            />
+          </Animated.View>
 
           <View style={styles.textContainer}>
             <TextBase
-              text={'¿Qué tipo de usuario eres?'}
+              text={'¿Qué tipo de usuario sos?'}
               color={'#fff'}
-              size={28}
+              size={26}
               lines={2}
               fontFamily={'AirbnbCereal_W_Bd'}
               style={styles.title}
             />
-            {/* <TextBase
-              text={'Selecciona tu rol para comenzar'}
+            <TextBase
+              text={'Elegí tu perfil para comenzar'}
               color={COLORS.dark.textMuted}
-              size={16}
+              size={15}
               fontFamily={'AirbnbCereal_W_Bk'}
               style={styles.subtitle}
-            /> */}
+            />
           </View>
         </View>
 
         <View style={styles.optionsContainer}>
-          <TouchableOpacity onPress={onPressTrainer} activeOpacity={0.7}>
-            <LinearGradient
-              start={{x: 0, y: 0}}
-              end={{x: 0, y: 1}}
-              colors={[
-                COLORS.dark.primaryLight,
-                COLORS.dark.primary,
-                COLORS.dark.primaryDark,
-              ]}
-              style={styles.optionButton}>
-              <FontAwesomeIcon icon={faDumbbell} size={20} color="#fff" />
-              <TextBase
-                text={'Entrenador'}
-                color={'#fff'}
-                size={16}
-                fontFamily={'AirbnbCereal_W_Bd'}
-                style={styles.buttonText}
-              />
-            </LinearGradient>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.optionButton, styles.champButton]}
+          <RoleCard
+            icon={faDumbbell}
+            title={'Entrenador'}
+            subtitle={'Gestioná tus champs, creá rutinas y dietas'}
+            onPress={onPressTrainer}
+          />
+          <RoleCard
+            icon={faTrophy}
+            title={'Champ'}
+            subtitle={'Entrená con un plan hecho a tu medida'}
             onPress={onPressChamp}
-            activeOpacity={0.7}>
-            <Image
-              alt="image-champ"
-              source={require('../../assets/image/Bitmap.png')}
-              style={styles.icon}
-            />
-            <TextBase
-              text={'Champ'}
-              color={COLORS.dark.background}
-              size={16}
-              fontFamily={'AirbnbCereal_W_Bd'}
-              style={styles.buttonText}
-            />
-          </TouchableOpacity>
+          />
         </View>
       </Animated.View>
     </View>
@@ -124,6 +175,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    zIndex: 1,
+    padding: 5,
+  },
   content: {
     width: '85%',
     alignItems: 'center',
@@ -135,37 +192,47 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 40,
+    gap: 32,
+  },
+  logo: {
+    width: 110,
+    height: 144,
   },
   textContainer: {
     alignItems: 'center',
   },
   title: {
-    marginBottom: 12,
+    marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     textAlign: 'center',
-    opacity: 0.8,
   },
   optionsContainer: {
     width: '100%',
-    gap: 12,
-    paddingHorizontal: 20,
+    gap: 14,
   },
-  optionButton: {
+  card: {
     width: '100%',
-    height: 56,
-    borderRadius: 28,
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: COLORS.dark.backgroundCard,
+    borderRadius: 18,
+    padding: 16,
+    gap: 14,
+  },
+  iconBadge: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(223, 72, 0, 0.15)',
     justifyContent: 'center',
-    gap: 8,
+    alignItems: 'center',
   },
-  champButton: {
-    backgroundColor: '#fff',
+  cardText: {
+    flex: 1,
   },
-  buttonText: {
-    marginLeft: 4,
+  cardSubtitle: {
+    marginTop: 2,
   },
 });
