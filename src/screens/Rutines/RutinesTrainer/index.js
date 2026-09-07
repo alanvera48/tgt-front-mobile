@@ -4,7 +4,7 @@ import {Tabs} from '@gluestack-ui/themed';
 import {TabList, TabItem} from '../../../components/TabComponents';
 import Discover from './Discover';
 import {MyTrainings} from './MyTrainings';
-import {Assigned} from './Assigned';
+import ExerciseBank from './ExerciseBank';
 import {COLORS} from '../../../style/style';
 
 export default function RutinesTrainer({route}) {
@@ -19,7 +19,7 @@ export default function RutinesTrainer({route}) {
         <TabList>
           <TabItem value="tab1" label="Descubrí" />
           <TabItem value="tab2" label="Mis entrenamientos" />
-          <TabItem value="tab3" label="Asignados" />
+          <TabItem value="tab3" label="Mis ejercicios" />
         </TabList>
 
         <Tabs.TabPanels>
@@ -30,7 +30,7 @@ export default function RutinesTrainer({route}) {
             <MyTrainings />
           </Tabs.TabPanel>
           <Tabs.TabPanel value="tab3">
-            <Assigned />
+            <ExerciseBank />
           </Tabs.TabPanel>
         </Tabs.TabPanels>
       </Tabs>

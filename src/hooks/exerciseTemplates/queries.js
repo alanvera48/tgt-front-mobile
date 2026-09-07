@@ -1,10 +1,22 @@
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {createExerciseTemplate, searchExerciseTemplates} from './endpoints';
+import {
+  createExerciseTemplate,
+  getExerciseTemplatesByTrainer,
+  searchExerciseTemplates,
+} from './endpoints';
 
 export const useSearchExerciseTemplates = params => {
   return useQuery({
     queryKey: ['exercise-templates', params],
     queryFn: () => searchExerciseTemplates(params),
+  });
+};
+
+export const useGetExerciseTemplatesByTrainer = trainerId => {
+  return useQuery({
+    queryKey: ['exercise-templates-by-trainer', trainerId],
+    queryFn: () => getExerciseTemplatesByTrainer(trainerId),
+    enabled: !!trainerId,
   });
 };
 

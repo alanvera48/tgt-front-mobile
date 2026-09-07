@@ -56,6 +56,17 @@ export const createRutineExercise = async data => {
   return response.data;
 };
 
+export const requestExerciseVideoUploadUrl = async ({
+  fileName,
+  contentType,
+}) => {
+  const response = await axiosInstance.post(
+    '/api/rutines/exercise/video-upload-url',
+    {fileName, contentType},
+  );
+  return response.data;
+};
+
 export const assignRutine = async data => {
   const response = await axiosInstance.post(
     '/api/rutinesxchamps/assign-rutine',
