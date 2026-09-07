@@ -30,9 +30,13 @@ import {DURATION_UNIT} from '../../../constants/inputs-options';
 import {
   useCreateRutineExerciseMutation,
   useCreateRutineHeaderMutation,
+  useRequestExerciseVideoUploadUrlMutation,
 } from '../../../hooks/rutines/queries';
+import {uploadFileToS3} from '../../../utils/s3Upload';
 import DraggableExerciseCard from './DraggableExerciseCard';
 import ExercisePickerModal from './ExercisePickerModal';
+
+const CONCURRENT_EXERCISE_SAVES = 3;
 
 const emptyExercise = () => ({
   name: '',
@@ -100,6 +104,8 @@ export default function CreateRutineWizard({navigation}) {
 
   const createHeaderMutation = useCreateRutineHeaderMutation();
   const createExerciseMutation = useCreateRutineExerciseMutation();
+  const requestVideoUploadUrlMutation =
+    useRequestExerciseVideoUploadUrlMutation();
 
   const {
     control,
@@ -170,7 +176,7 @@ export default function CreateRutineWizard({navigation}) {
       if (result) {
         setValue(`exercises.${index}.video`, {
           uri: result.path,
-          type: 'video/mp4',
+          type: result.mime || 'video/mp4',
           name: `video-${index}.mp4`,
         });
       }
@@ -303,11 +309,19 @@ export default function CreateRutineWizard({navigation}) {
       if (exercise.exerciseVideoId) {
         formData.append('exerciseVideoId', exercise.exerciseVideoId);
       } else if (exercise.video?.uri) {
-        formData.append('video', {
-          uri: exercise.video.uri,
-          type: 'video/mp4',
-          name: exercise.video.name || 'video.mp4',
+        const contentType = exercise.video.type || 'video/mp4';
+        const fileName = exercise.video.name || 'video.mp4';
+        const {uploadUrl, key} =
+          await requestVideoUploadUrlMutation.mutateAsync({
+            fileName,
+            contentType,
+          });
+        await uploadFileToS3({
+          uploadUrl,
+          fileUri: exercise.video.uri,
+          contentType,
         });
+        formData.append('videoKey', key);
       }
       await createExerciseMutation.mutateAsync(formData);
       setExerciseStatus(prev => ({...prev, [fieldId]: 'success'}));
@@ -335,14 +349,16 @@ export default function CreateRutineWizard({navigation}) {
     setIsSavingExercises(true);
     let allSucceeded = true;
 
-    for (let i = 0; i < payload.length; i++) {
-      const fieldId = fields[i]?.id;
-      if (exerciseStatus[fieldId] === 'success') {
-        continue;
-      }
+    const pending = payload
+      .map((exercise, i) => ({exercise, fieldId: fields[i]?.id}))
+      .filter(({fieldId}) => exerciseStatus[fieldId] !== 'success');
 
-      const success = await saveExercise(payload[i], fieldId);
-      if (!success) {
+    for (let i = 0; i < pending.length; i += CONCURRENT_EXERCISE_SAVES) {
+      const batch = pending.slice(i, i + CONCURRENT_EXERCISE_SAVES);
+      const results = await Promise.all(
+        batch.map(({exercise, fieldId}) => saveExercise(exercise, fieldId)),
+      );
+      if (results.some(success => !success)) {
         allSucceeded = false;
       }
     }

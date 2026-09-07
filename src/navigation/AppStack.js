@@ -4,6 +4,7 @@ import {TouchableOpacity, View} from 'react-native';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import DietDetail from '../screens/Diets/DietDetail/DietDetail';
 import RutineDetail from '../screens/Rutines/RutineDetail/RutineDetail';
+import ExerciseTemplateDetail from '../screens/Rutines/ExerciseTemplateDetail';
 import {useAuthStore} from '../store/authStore';
 import ChampProfile from '../screens/Champs/ChampProfile';
 import ExploreStack from '../screens/Explore';
@@ -160,6 +161,24 @@ const AppStack = () => {
         />
 
         <Stack.Screen name="CountdownScreen" component={CountdownScreen} />
+
+        <Stack.Screen
+          name="ExerciseTemplateDetail"
+          component={ExerciseTemplateDetail}
+          options={({route}) => ({
+            headerShown: true,
+            headerTitle: route?.params?.exercise?.name || 'Ejercicio',
+            headerLeftLabelVisible: false,
+            headerTintColor: '#ffff',
+            headerTitleAlign: 'center',
+            headerStyle: {
+              backgroundColor: COLORS.dark.background,
+              shadowColor: 'transparent',
+              height: 90,
+            },
+            headerLeft: () => <GoBackArrow />,
+          })}
+        />
 
         <Stack.Screen
           name="CreateDiet"

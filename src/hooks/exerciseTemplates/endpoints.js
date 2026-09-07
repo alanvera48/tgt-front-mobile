@@ -26,6 +26,13 @@ export const searchExerciseTemplates = async ({
   return response.data;
 };
 
+export const getExerciseTemplatesByTrainer = async trainerId => {
+  const response = await axiosInstance.get(
+    `/api/exercise-templates/trainer/${trainerId}`,
+  );
+  return response.data;
+};
+
 export const createExerciseTemplate = async data => {
   const response = await axiosInstance.post('/api/exercise-templates', data, {
     headers: {

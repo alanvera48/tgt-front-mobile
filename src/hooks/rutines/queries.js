@@ -4,6 +4,7 @@ import {
   createOrUpdateRutine,
   createRutineHeader,
   createRutineExercise,
+  requestExerciseVideoUploadUrl,
   getChampRutines,
   getChampRutinesAsTrainer,
   getMyRutines,
@@ -61,6 +62,13 @@ export const useCreateRutineExerciseMutation = () => {
   return useMutation({
     mutationKey: ['create-rutine-exercise'],
     mutationFn: data => createRutineExercise(data),
+  });
+};
+
+export const useRequestExerciseVideoUploadUrlMutation = () => {
+  return useMutation({
+    mutationKey: ['request-exercise-video-upload-url'],
+    mutationFn: data => requestExerciseVideoUploadUrl(data),
   });
 };
 

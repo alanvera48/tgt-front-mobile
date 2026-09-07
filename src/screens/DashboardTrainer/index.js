@@ -1,5 +1,8 @@
-import {View, Dimensions} from 'react-native';
+import {TouchableOpacity, View, Dimensions} from 'react-native';
+import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
+import {faChevronRight, faDumbbell} from '@fortawesome/free-solid-svg-icons';
 import ListHorizontal from '../../components/ListHorizontal/ListHorizontal';
+import TextBase from '../../components/Base/TextBase';
 import {useGetMyRutines} from '../../hooks/rutines/queries';
 import {useGetMyChamps} from '../../hooks/user/queries';
 
@@ -46,6 +49,12 @@ export default function DashboardTrainer({navigation}) {
   const navigateToAllRutines = () => {
     navigation.navigate('Rutines', {
       activeTab: 'tab2',
+    });
+  };
+
+  const navigateToExerciseBank = () => {
+    navigation.navigate('Rutines', {
+      activeTab: 'tab3',
     });
   };
 
@@ -98,6 +107,57 @@ export default function DashboardTrainer({navigation}) {
           }}>
           {/* <InputSearch /> */}
         </View>
+
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={navigateToExerciseBank}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginHorizontal: 20,
+            marginTop: 16,
+            padding: 14,
+            borderRadius: 14,
+            backgroundColor: COLORS.dark.backgroundCard,
+          }}>
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 10,
+              marginRight: 12,
+              backgroundColor: COLORS.dark.backgroundElevated,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            <FontAwesomeIcon
+              icon={faDumbbell}
+              color={COLORS.dark.primary}
+              size={18}
+            />
+          </View>
+          <View style={{flex: 1}}>
+            <TextBase
+              text={'Mis ejercicios'}
+              size={14}
+              color={'#fff'}
+              fontFamily="AirbnbCereal_W_Bd"
+            />
+            <TextBase
+              text={'Ejercicios que ya cargaste, listos para reutilizar'}
+              size={12}
+              lines={2}
+              color={COLORS.dark.textMuted}
+              style={{marginTop: 2}}
+            />
+          </View>
+          <FontAwesomeIcon
+            icon={faChevronRight}
+            color={COLORS.dark.textMuted}
+            size={16}
+          />
+        </TouchableOpacity>
+
         <ListHorizontal
           // TODO: deshabiltado temporalmente
           // showBrowseAll={CARDS?.length > 0}
